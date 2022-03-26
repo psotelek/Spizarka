@@ -24,15 +24,17 @@ function filterRows(rows: object[], nameFilter: string, categoryFilter: string) 
 function Pantry() {
   const [category, setCategory] = useState("all")
   const [name, setName] = useState("")
-  const [rows, setRows] = useState(GetPantry())
+  const [rows, setRows] = useState<any[]>([])
+  GetPantry().then(data => setRows(data))
 
   const displayRows = filterRows(rows, name, category)
   const columns: GridColDef[] = [
     { field: 'name' },
-    { field: 'number' },
-    { field: 'exp_date' },
-    { field: "scale" },
-    { field: 'note' },
+    { field: 'amount' },
+    { field: 'type' },
+//     { field: 'expiry_date' },
+    { field: "measure" },
+//     { field: 'note' },
   ];
   return <div style={{ height: 500, width: '50%' }}>
     <TextField 
