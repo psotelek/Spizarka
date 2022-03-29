@@ -23,14 +23,16 @@ class MockedDataBase(DataBaseInterface):
     def __init__(self):
         super().__init__()
         try:
-            self.cursor.execute(f"DROP TABLE {PRODUCTS}")
-            self.cursor.execute(f"DROP TABLE {PRODUCTS_ITEMS}")
+            self.create_initial_tables()
         except MySQLdb._exceptions.OperationalError as e:
             pass
 
-        # Create data base if doesn't exist already
+    def __del__(self):
         try:
-            self.create_initial_tables()
+            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            self.cursor.execute(f"DROP TABLE {PRODUCTS}")
+            self.cursor.execute(f"DROP TABLE {PRODUCTS_ITEMS}")
+            self.db_interface.commit()
         except MySQLdb._exceptions.OperationalError as e:
             pass
 
@@ -45,7 +47,8 @@ class MockedDataBase(DataBaseInterface):
 
     def create_initial_tables(self):
         self.cursor.execute(f"CREATE TABLE {PRODUCTS} "
-                            f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, type text, measure text, amount integer)")
+                            # f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, type text, measure text, amount integer)")
+                            f"(name text, type text, measure text, amount integer)")
         self.cursor.execute(f"CREATE TABLE {PRODUCTS_ITEMS} "
                             f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, expiry_date text, notes text)")
 

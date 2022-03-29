@@ -26,10 +26,10 @@ class DataBaseInterface:
             rows.append(row)
         return rows;
 
-    def fetch_all_records_from_tables(self):
+    def fetch_all_records(self):
         rows = []
         # statement = f"SELECT * FROM {PRODUCTS_ITEMS} JOIN {PRODUCTS} ON {PRODUCTS_ITEMS}.name = {PRODUCTS}.name ORDER BY {PRODUCTS_ITEMS}.name"
-        statement = f"SELECT * FROM {PRODUCTS_ITEMS} pi JOIN (SELECT type maseure FROM {PRODUCTS} p) ON pi.name = p.name ORDER BY pi.name"
+        statement = f"SELECT * FROM {PRODUCTS_ITEMS} pi LEFT JOIN {PRODUCTS} p using(name) ORDER BY pi.name"
         self.cursor.execute(statement)
         for row in self.cursor.fetchall():
             rows.append(row)
