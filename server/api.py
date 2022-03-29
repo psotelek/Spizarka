@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from data_base_interface import DataBaseInterface, STOCK_ITEMS, STOCKS
+from data_base_interface import DataBaseInterface, PRODUCTS_ITEMS, PRODUCTS
 
 app = FastAPI()
 db = DataBaseInterface()
@@ -24,7 +24,7 @@ def read_root():
 
 @app.get("/api")
 def read_id():
-    return db.fetch_all_records_from_table(STOCKS)
+    return db.fetch_all_records_from_table(PRODUCTS)
 
 
 @app.post("/kot/main")
