@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Routes, Route, Link } from "react-router-dom";
-import { GetPantry } from '../src/api/Api'
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
-import { MenuItem, Select, TextField } from '@mui/material';
+import { Api } from '../src/api/Api'
+import { Button, MenuItem, Select, TextField } from '@mui/material';
+import { StockTable } from './component/StockTable';
 
 
 function App() {
@@ -17,26 +17,29 @@ function App() {
     );
 }
 
-function filterRows(rows: object[], nameFilter: string, categoryFilter: string) {
-  return rows
-}
-
 function Pantry() {
-  const [category, setCategory] = useState("all")
+  const [type, setType] = useState("all")
   const [name, setName] = useState("")
   const [rows, setRows] = useState<any[]>([])
-  GetPantry().then(data => setRows(data))
+  const [editedRow, setEditedRow] = useState(-1)
+  const [api, setApi] = useState(new Api())
+  const [refresh, setRefresh] = useState(true)
+/*
+  useEffect(() => {
+    api.getPantry().then((data: any) => setRows(data))
+  }, [])
+*/
 
-  const displayRows = filterRows(rows, name, category)
-  const columns: GridColDef[] = [
-    { field: 'name' },
-    { field: 'amount' },
-    { field: 'type' },
-//     { field: 'expiry_date' },
-    { field: "measure" },
-//     { field: 'note' },
-  ];
+  useEffect(() => {
+    setRows(api.getPantry())
+  }, [])
+  const displayRows = rows.filter((row) => row.name.includes(name) && type == "all" || row.type === type)
   return <div style={{ height: 500, width: '50%' }}>
+    <Button variant="outlined" onClick = {e => {
+      api.addPantry("", "", "", "", "", "")
+      setRows(api.getPantry())
+      setRefresh(!refresh.valueOf())
+    }}>Add</Button>
     <TextField 
       id="outlined-basic"
       variant="outlined" 
@@ -49,17 +52,14 @@ function Pantry() {
       }}  
     />
     <Select
-      value={category}
+      value={type}
       label="Age"
-      onChange={e => setCategory(e.target.value)}>
+      onChange={e => setType(e.target.value)}>
         <MenuItem value="all">Wszystkie</MenuItem>
         <MenuItem value="food">Jedzenie</MenuItem>
         <MenuItem value="cleaning">Środki czystości</MenuItem>
     </Select>
-    <DataGrid
-        rows={rows.filter(row => row.name.includes(name) && category == "all" || row.category === category)}
-        columns={columns}
-      />
+    <StockTable rows={displayRows} editedRow={editedRow} onEdit={setEditedRow} api={api} update={setRows} refresh={refresh} setRefresh={setRefresh}/>
   </div>
 }
 
