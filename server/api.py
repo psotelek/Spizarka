@@ -28,10 +28,10 @@ class ProductType(BaseModel):
 
 
 class Product(BaseModel):
-    type_id: int
+    type: int
     name: str ##Optional[str]
     amount: int
-    exp_date: str ##Optional[str]
+    expiry_date: str ##Optional[str]
     note: str ##Optional[str]
 
 
@@ -63,12 +63,12 @@ def read_root():
 # AA = ProductType(name="mydło", category='kosmetyki', measure='szt')
 # add_new_product_type(AA)
 #
-# B = Product(type_id=2, amount=6, note='nie do jedzenia', name='', exp_date='', )
+# B = Product(type=2, amount=6, note='nie do jedzenia', name='', expiry_date='', )
 # add_new_product(B)
 #
-# BB = Product(type_id=1, amount=2, note='83%!!!!!!!!!', name='', exp_date='22.04.2021')
+# BB = Product(type=1, amount=2, note='83%!!!!!!!!!', name='', expiry_date='22.04.2021')
 # add_new_product(BB)
 #
-# BBB = Product(type_id=1, amount=6, note='na ciasteczka', exp_date='', name='')
+# BBB = Product(type=1, amount=6, note='na ciasteczka', expiry_date='', name='')
 # add_new_product(BBB)
-print(read_id())
+# print(read_id())

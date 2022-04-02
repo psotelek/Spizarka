@@ -7,14 +7,14 @@ import MySQLdb
 def pytest_configure():
     pytest.TEST_ITEM_1 = {'product_type': {'name': 'Pasta do zębów', 'category': 'Środki czystości', 'measure': 'szt'},
                           'products':
-                              [{'amount': 3, 'exp_date': '', 'note': ''},
-                               {'amount': 1, 'exp_date': '', 'note': ''},
-                               {'amount': 5, 'exp_date': '', 'note': 'w pudełku pod łóżkiem'}]}
+                              [{'amount': 3, 'expiry_date': '', 'note': ''},
+                               {'amount': 1, 'expiry_date': '', 'note': ''},
+                               {'amount': 5, 'expiry_date': '', 'note': 'w pudełku pod łóżkiem'}]}
     pytest.TEST_ITEM_2 = {'product_type': {'name': 'Pasta do zębów', 'category': 'Środki czystości', 'measure': 'szt'},
                           'products':
-                              [{'amount': 1, 'exp_date': '10.02.2023', 'note': ''},
-                               {'amount': 6, 'exp_date': '22.12.2028', 'note': ''},
-                               {'amount': 5, 'exp_date': '05.05.2022', 'note': 'w pudełku pod łóżkiem'}]}
+                              [{'amount': 1, 'expiry_date': '10.02.2023', 'note': ''},
+                               {'amount': 6, 'expiry_date': '22.12.2028', 'note': ''},
+                               {'amount': 5, 'expiry_date': '05.05.2022', 'note': 'w pudełku pod łóżkiem'}]}
 
 
 
@@ -59,10 +59,10 @@ class MockedDataBase(DataBaseInterface):
 
     def create_initial_tables(self):
         self.cursor.execute(f"CREATE TABLE {PRODUCT_TYPES} "
-                            f"(type_id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, category text, measure text)")
+                            f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, category text, measure text)")
         self.cursor.execute(f"CREATE TABLE {PRODUCTS} "
-                            f"(product_id INTEGER PRIMARY KEY AUTO_INCREMENT, type_id integer, name text, amount integer,"
-                            f"exp_date text, note text)")
+                            f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, type integer, name text, amount integer,"
+                            f"expiry_date text, note text)")
 
 
     def add_initial_items(self):

@@ -4,7 +4,7 @@ import { getPantry, getPantryOnline } from "../api/Api"
 import { StockTable } from "../component/StockTable"
 
 export interface Category {
-  id: string
+  id: number
   name: string
   amount: number
   measure: string
@@ -14,7 +14,7 @@ export interface Category {
 }
 
 interface Product {
-  id: string
+  id: number
   name: string
   amount: number
   expiry_date: string
@@ -24,15 +24,17 @@ interface Product {
 export const Pantry = () => {
     const [rows, setRows] = useState<Category[]>([])
 
-    useEffect(() => {
-      setRows(getPantry())
-    }, [])
 
-    /* 
+//     useEffect(() => {
+//       setRows(getPantry())
+//     }, [])
+
+
     getPantryOnline().then((data) => {
       setRows(data)
     })
-    */
+
+
 
     return <Grid 
       container 

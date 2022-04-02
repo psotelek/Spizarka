@@ -52,22 +52,22 @@ class DataBaseInterface:
     @check_connection_to_db
     def fetch_all_product_types_with_products(self):
         product_types = self.fetch_all_records_from_table(PRODUCT_TYPES)
-        columns_from_products = 'product_id, amount, exp_date, note'
+        columns_from_products = 'id, amount, expiry_date, note'
         for product_type in product_types:
-            statement = f"SELECT {columns_from_products} FROM {PRODUCTS} WHERE type_id = {product_type['type_id']}"
+            statement = f"SELECT {columns_from_products} FROM {PRODUCTS} WHERE type = {product_type['id']}"
             self.cursor.execute(statement)
 
             rows = []
             for row in self.cursor.fetchall():
                 rows.append(row)
-            product_type.update({'product_list': rows})
+            product_type.update({'products': rows})
 
-            exp_date = ''
-            rows_with_exp_date_not_empty = [x for x in rows if not '' and x['exp_date'] != '']
-            if rows_with_exp_date_not_empty:
-                a = min([datetime.strptime(product['exp_date'], '%d.%m.%Y') for product in rows_with_exp_date_not_empty])
-                exp_date = a.strftime("%d.%m.%Y")
-            product_type.update({'exp_date': exp_date})
+            expiry_date = ''
+            rows_with_expiry_date_not_empty = [x for x in rows if not '' and x['expiry_date'] != '']
+            if rows_with_expiry_date_not_empty:
+                a = min([datetime.strptime(product['expiry_date'], '%d.%m.%Y') for product in rows_with_expiry_date_not_empty])
+                expiry_date = a.strftime("%d.%m.%Y")
+            product_type.update({'expiry_date': expiry_date})
 
             amount = sum([int(x['amount']) for x in rows])
             product_type.update({'amount': amount})
