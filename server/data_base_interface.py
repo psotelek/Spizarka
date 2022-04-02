@@ -1,8 +1,10 @@
 import sqlite3 as sl
 import MySQLdb
+import logging
+from datetime import datetime
 
+PRODUCT_TYPES = 'PRODUCT_TYPES'
 PRODUCTS = 'PRODUCTS'
-PRODUCTS_ITEMS = 'PRODUCTS_ITEMS'
 
 
 class DataBaseInterface:
@@ -11,15 +13,62 @@ class DataBaseInterface:
         # self.db_interface.autocommit(True)
         self.cursor = self.db_interface.cursor(MySQLdb.cursors.DictCursor)
 
-    def _split_input_record(self, input_dict):
-        table1 = {'name': input_dict['name'], 'type': input_dict['type'], 'measure': input_dict['measure'],
-                  'amount': input_dict['amount']}
-        table2 = {'name': input_dict['name'], 'expiry_date': input_dict['expiry_date'], 'notes': input_dict['notes']}
-        return [table1, table2]
+    def add_new_product_type(self, new_product_type):
+        self.add_new_record_to_table(PRODUCT_TYPES, new_product_type)
+        #todo   return sth?
+
+    def add_new_product(self, new_product):
+        self.add_new_record_to_table(PRODUCTS, new_product)
+        #todo   return sth?
+
+    def add_new_record_to_table(self, table, input):
+        attributes = ','.join([f" {k}" for k in input.keys()])
+        values = ','.join([f"'{k}'" for k in input.values()])
+        statement = f"INSERT INTO {table} ({attributes}) VALUES ({values})"
+
+        self.cursor.execute(statement)
+        self.db_interface.commit()
+
+        #todo   check response?
+
+    def fetch_all_product_types_with_products(self):
+        product_types = self.fetch_all_records_from_table(PRODUCT_TYPES)
+        columns_from_products = 'product_id, amount, exp_date, note'
+        for product_type in product_types:
+            statement = f"SELECT {columns_from_products} FROM {PRODUCTS} WHERE type_id = {product_type['type_id']}"
+            self.cursor.execute(statement)
+
+            rows = []
+            for row in self.cursor.fetchall():
+                rows.append(row)
+            product_type.update({'product_list': rows})
+
+            exp_date = ''
+            if [x for x in rows if not '' and x['exp_date'] != '']:
+                a = min([datetime.strptime(product['exp_date'], '%d.%m.%Y') for product in rows])
+                exp_date = a.strftime("%d.%m.%Y")
+            product_type.update({'exp_date': exp_date})
+
+            amount = sum([int(x['amount']) for x in rows])
+            product_type.update({'amount': amount})
+
+        return product_types
+
+
+
+
+
+
+
+    # def _split_input_record(self, input_dict):
+    #     table1 = {'name': input_dict['name'], 'type': input_dict['type'], 'measure': input_dict['measure']}
+    #     table2 = {'amount': input_dict['amount'], 'expiry_date': input_dict['expiry_date'], 'notes': input_dict['notes']}
+    #     return [table1, table2]
+
 
     def fetch_all_records_from_table(self, table):
         rows = []
-        statement = f"SELECT * FROM {table} ORDER BY name"
+        statement = f"SELECT * FROM {table}"
         self.cursor.execute(statement)
 
         for row in self.cursor.fetchall():
@@ -29,31 +78,27 @@ class DataBaseInterface:
     def fetch_all_records(self):
         rows = []
         # statement = f"SELECT * FROM {PRODUCTS_ITEMS} JOIN {PRODUCTS} ON {PRODUCTS_ITEMS}.name = {PRODUCTS}.name ORDER BY {PRODUCTS_ITEMS}.name"
-        statement = f"SELECT * FROM {PRODUCTS_ITEMS} pi LEFT JOIN {PRODUCTS} p using(name) ORDER BY pi.name"
+        statement = f"SELECT * FROM {PRODUCTS} pi LEFT JOIN {PRODUCT_TYPES} p using(name) ORDER BY pi.name"
         self.cursor.execute(statement)
         for row in self.cursor.fetchall():
             rows.append(row)
         return rows
 
     def count_number_of_product_entry(self, name):
-        statement = f"SELECT COUNT(*) FROM {PRODUCTS_ITEMS} WHERE name = '{name}'"
+        statement = f"SELECT COUNT(*) FROM {PRODUCTS} WHERE name = '{name}'"
         return self.cursor.execute(statement)
 
     def add_new_record(self, input):
         [input_stocks, input_stock_items] = self._split_input_record(input)
-        self.add_new_record_to_table(PRODUCTS, input_stocks)
+        self.add_new_record_to_table(PRODUCT_TYPES, input_stocks)
 
         if input['measure'] == 'szt':
             for _ in range(input['amount']):
-                self.add_new_record_to_table(PRODUCTS_ITEMS, input_stock_items)
+                self.add_new_record_to_table(PRODUCTS, input_stock_items)
         else:
-            self.add_new_record_to_table(PRODUCTS_ITEMS, input_stock_items)
+            self.add_new_record_to_table(PRODUCTS, input_stock_items)
 
-    def add_new_record_to_table(self, table, input):
-        attributes = ','.join([f" {k}" for k in input.keys()])
-        values = ','.join([f"'{k}'" for k in input.values()])
-        self.cursor.execute(f"INSERT INTO {table} ({attributes}) VALUES ({values})")
-        self.db_interface.commit()
+
 
     # def remove_record(self, name):
     #     self.remove_record_from_table(STOCKS, name)

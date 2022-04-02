@@ -1,17 +1,25 @@
 import pytest
 from server.data_base_interface import DataBaseInterface
-from server.data_base_interface import PRODUCTS, PRODUCTS_ITEMS
+from server.data_base_interface import PRODUCT_TYPES, PRODUCTS
 import sqlite3 as sl, MySQLdb
 
 def pytest_configure():
-    pytest.TEST_ITEM_1 = {'name': 'Pasta do zębów', 'type': 'Środki czystości', 'measure': 'szt', 'amount': 1,
-                          'expiry_date': '10.02.2023', 'notes': ''}
-    pytest.TEST_ITEM_2 = {'name': 'Płyn do soczewek', 'type': 'Środki czystości', 'measure': 'szt', 'amount': 5,
-                          'expiry_date': '', 'notes': ''}
-    pytest.TEST_ITEM_3 = {'name': 'Kukurydza', 'type': 'Jedzenie', 'measure': 'szt', 'amount': 0,
-                          'expiry_date': '', 'notes': ''}
-    pytest.TEST_ITEM_4 = {'name': 'Mrożone truskawki', 'type': 'Jedzenie', 'measure': 'kg', 'amount': 3,
-                          'expiry_date': '', 'notes': 'Zapakowane 10.06.2022'}
+    pytest.TEST_ITEM_1 = {'product_type': {'type': 'Pasta do zębów', 'category': 'Środki czystości', 'measure': 'szt'},
+                          'products':
+                              [{'amount': 3, 'exp_date': '', 'note': ''},
+                               {'amount': 1, 'exp_date': '', 'note': ''},
+                               {'amount': 5, 'exp_date': '', 'note': 'w pudełku pod łóżkiem'}]}
+    pytest.TEST_ITEM_2 = {'product_type': {'type': 'Pasta do zębów', 'category': 'Środki czystości', 'measure': 'szt'},
+                          'products':
+                              [{'amount': 1, 'exp_date': '10.02.2023', 'note': ''},
+                               {'amount': 6, 'exp_date': '22.12.2028', 'note': ''},
+                               {'amount': 5, 'exp_date': '05.05.2022', 'note': 'w pudełku pod łóżkiem'}]}
+
+
+    pytest.TEST_ITEM_3 = {'type': 'Kukurydza', 'category': 'Jedzenie', 'measure': 'szt', 'amount': 0,
+                          'exp_date': '', 'note': ''}
+    pytest.TEST_ITEM_4 = {'type': 'Mrożone truskawki', 'category': 'Jedzenie', 'measure': 'kg', 'amount': 3,
+                          'exp_date': '', 'nots': 'Zapakowane 10.06.2022'}
 
 @pytest.fixture
 def db_interface():
@@ -22,16 +30,23 @@ def db_interface():
 class MockedDataBase(DataBaseInterface):
     def __init__(self):
         super().__init__()
-        try:
-            self.create_initial_tables()
-        except MySQLdb._exceptions.OperationalError as e:
-            pass
+        # try:
+        #     self.create_initial_tables()
+        # except MySQLdb._exceptions.OperationalError as e:
+        #     pass
+
+    # def __del__(self):
+    #     try:
+    #         self.cursor.execute(f"DROP TABLE {PRODUCT_TYPES}")
+    #         self.cursor.execute(f"DROP TABLE {PRODUCTS}")
+    #         self.db_interface.commit()
+    #     except MySQLdb._exceptions.OperationalError as e:
+    #         pass
 
     def __del__(self):
         try:
-            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            self.cursor.execute(f"DROP TABLE {PRODUCTS}")
-            self.cursor.execute(f"DROP TABLE {PRODUCTS_ITEMS}")
+            self.cursor.execute(f"TRUNCATE TABLE {PRODUCT_TYPES}")
+            self.cursor.execute(f"TRUNCATE TABLE {PRODUCTS}")
             self.db_interface.commit()
         except MySQLdb._exceptions.OperationalError as e:
             pass
@@ -46,11 +61,11 @@ class MockedDataBase(DataBaseInterface):
     #         pass
 
     def create_initial_tables(self):
+        self.cursor.execute(f"CREATE TABLE {PRODUCT_TYPES} "
+                            f"(type_id INTEGER PRIMARY KEY AUTO_INCREMENT, type text, category text, measure text)")
         self.cursor.execute(f"CREATE TABLE {PRODUCTS} "
-                            # f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, type text, measure text, amount integer)")
-                            f"(name text, type text, measure text, amount integer)")
-        self.cursor.execute(f"CREATE TABLE {PRODUCTS_ITEMS} "
-                            f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, expiry_date text, notes text)")
+                            f"(product_id INTEGER PRIMARY KEY AUTO_INCREMENT, type_id integer, name text, amount integer,"
+                            f"exp_date text, note text)")
 
 
     def add_initial_items(self):

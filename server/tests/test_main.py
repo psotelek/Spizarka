@@ -1,55 +1,78 @@
-from server.data_base_interface import PRODUCTS, PRODUCTS_ITEMS
+from server.data_base_interface import PRODUCT_TYPES, PRODUCTS
 import pytest
 from copy import copy
 
-@pytest.mark.parametrize(
-    "item",
-    # [pytest.TEST_ITEM_1,
-    [pytest.TEST_ITEM_3])
-     # pytest.TEST_ITEM_2,
-     # pytest.TEST_ITEM_3])
-def test_add_new_record_with_measure_szt(db_interface, item):
-    products_table = []
-    products_items_table = []
-    products_full_info_table = []
-    tmp = copy(item)
 
-    [product, product_item] = db_interface._split_input_record(item)
-    products_table.append(product)
+def test_add_1st_product_type_and_its_product_without_exp_date(db_interface):
+    item = pytest.TEST_ITEM_1
+    prod_type_data = item['product_type']
+    db_interface.add_new_product_type(prod_type_data)
+    expected_output = prod_type_data
+    expected_output.update({'type_id': 1, 'amount': 0, 'exp_date': '', 'product_list': []})
+    assert db_interface.fetch_all_product_types_with_products() == [expected_output]
 
-    for i in range(item['amount']):
-        product_item.update({"id": i+1})
-        tmp.update({"id": i+1})
-        products_items_table.append(copy(product_item))
-        products_full_info_table.append(copy(tmp))
+    expected_products = []
+    for i, product in enumerate(item['products']):
+        prod_data = product
+        prod_data.update({'type_id': 1})
+        db_interface.add_new_product(prod_data)
+        del prod_data['type_id']
+        prod_data.update({'product_id': 1+i})
+        expected_products.append(prod_data)
+        expected_output.update({'product_list': expected_products})
 
-    db_interface.add_new_record(item)
+    expected_output.update({'amount': 9})
+    assert db_interface.fetch_all_product_types_with_products() == [expected_output]
 
-    assert db_interface.fetch_all_records_from_table(PRODUCTS) == products_table
-    assert db_interface.fetch_all_records_from_table(PRODUCTS_ITEMS) == products_items_table
-    assert db_interface.fetch_all_records() == products_full_info_table
 
-    print("----------------")
-    print(products_table)
-    print(products_items_table)
-    print(db_interface.fetch_all_records())
-    print("----------------")
+def test_add_1st_product_type_and_its_product_with_exp_date(db_interface):
+    item = pytest.TEST_ITEM_2
+    prod_type_data = item['product_type']
+    db_interface.add_new_product_type(prod_type_data)
+    expected_output = prod_type_data
+    expected_output.update({'type_id': 1, 'amount': 12, 'exp_date': item['products'][2]['exp_date'], 'product_list': []})
 
-# def test_add_new_record_with_measure_1szt(db_interface):
-#     items = [pytest.TEST_ITEM_1, pytest.TEST_ITEM_2]
-#     table1 = []
-#     table2 = []
+    expected_products = []
+    for i, product in enumerate(item['products']):
+        prod_data = product
+        prod_data.update({'type_id': 1})
+        db_interface.add_new_product(prod_data)
+        del prod_data['type_id']
+        prod_data.update({'product_id': 1+i})
+        expected_products.append(prod_data)
+        expected_output.update({'product_list': expected_products})
+
+    assert db_interface.fetch_all_product_types_with_products() == [expected_output]
+
+# @pytest.mark.parametrize(
+#     "item",
+#     # [pytest.TEST_ITEM_1,
+#     [pytest.TEST_ITEM_3])
+#      # pytest.TEST_ITEM_2,
+#      # pytest.TEST_ITEM_3])
+# def test_add_new_record_with_measure_szt(db_interface, item):
+#     products_table = []
+#     products_items_table = []
+#     products_full_info_table = []
+#     tmp = copy(item)
 #
-#     for item_id, item in enumerate(items):
-#         print(item_id)
-#         [t1, t2] = db_interface._split_input_record(item)
-#         t1.update({"id": item_id+1})
-#         t2.update({"id": item_id+1})
-#         table1.append(t1)
-#         table2.append(t2)
-#         db_interface.add_new_record(item)
+#     [product, product_item] = db_interface._split_input_record(item)
+#     products_table.append(product)
 #
-#         assert db_interface.fetch_all_records_from_table(STOCKS) == table1
-#         assert db_interface.fetch_all_records_from_table(STOCK_ITEMS) == table2
+#     for i in range(item['amount']):
+#         product_item.update({"id": i+1})
+#         tmp.update({"id": i+1})
+#         products_items_table.append(copy(product_item))
+#         products_full_info_table.append(copy(tmp))
 #
-#         print(db_interface.fetch_all_records_from_tables())
+#     db_interface.add_new_record(item)
+#
+#     assert db_interface.fetch_all_records_from_table(PRODUCT_TYPES) == products_table
+#     assert db_interface.fetch_all_records_from_table(PRODUCTS) == products_items_table
+#     assert db_interface.fetch_all_records() == products_full_info_table
+#
+#     print("----------------")
+#     print(products_table)
+#     print(products_items_table)
+#     print(db_interface.fetch_all_records())
+#     print("----------------")
