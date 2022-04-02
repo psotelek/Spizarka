@@ -22,28 +22,32 @@ app.add_middleware(
 
 
 class ProductType(BaseModel):
-    type: str
+    name: str
     category: str
     measure: str
 
+
 class Product(BaseModel):
     type_id: int
-    name: Optional[str]
+    name: str ##Optional[str]
     amount: int
-    exp_date: Optional[str]
-    note: Optional[str]
+    exp_date: str ##Optional[str]
+    note: str ##Optional[str]
 
-@app.post("/xxx")
+
+@app.post("/addType")
 def add_new_product_type(product_type: ProductType):
     product_type_dict = product_type.dict()
     return db.add_new_product_type(product_type_dict)
 
-@app.post("/xxx")
+
+@app.post("/addProduct")
 def add_new_product(product: Product):
     product_dict = product.dict()
     return db.add_new_product(product_dict)
 
-@app.get("/api")
+
+@app.get("/getAll")
 def read_id():
     return db.fetch_all_product_types_with_products()
 
@@ -53,27 +57,18 @@ def read_root():
     return {"message": "Welcome to your todo list."}
 
 
-
-
-@app.post("/kot/main")
-def create_main():
-    return {
-        "status": "OK"
-    }
-
-
-A = ProductType(type="masło", category='Jedzenie', measure='szt')
-add_new_product_type(A)
-
-AA = ProductType(type="mydło", category='kosmetyki', measure='szt')
-add_new_product_type(AA)
-
-B = Product(type_id=1, amount=6)
-add_new_product(B)
-
-BB = Product(type_id=2, amount=2)
-add_new_product(BB)
-
-BBB = Product(type_id=2, amount=6, note='na ciasteczka')
-add_new_product(BBB)
-read_id()
+# A = ProductType(name="masło", category='Jedzenie', measure='szt')
+# add_new_product_type(A)
+#
+# AA = ProductType(name="mydło", category='kosmetyki', measure='szt')
+# add_new_product_type(AA)
+#
+# B = Product(type_id=2, amount=6, note='nie do jedzenia', name='', exp_date='', )
+# add_new_product(B)
+#
+# BB = Product(type_id=1, amount=2, note='83%!!!!!!!!!', name='', exp_date='22.04.2021')
+# add_new_product(BB)
+#
+# BBB = Product(type_id=1, amount=6, note='na ciasteczka', exp_date='', name='')
+# add_new_product(BBB)
+print(read_id())

@@ -9,9 +9,26 @@ PRODUCTS = 'PRODUCTS'
 
 class DataBaseInterface:
     def __init__(self):
-        self.db_interface = MySQLdb.connect(host="localhost", port=3306, user="Paulina", password="Mysql55!", database="zapasy")
+        self.db_interface = self.init_db()
         # self.db_interface.autocommit(True)
         self.cursor = self.db_interface.cursor(MySQLdb.cursors.DictCursor)
+
+    def init_db(self):
+        return MySQLdb.connect(host="localhost", port=3306, user="Paulina",
+                               password="Mysql55!", database="zapasy")
+
+    def get_cursor(self):
+        try:
+            self.db_interface.ping()
+        except MySQLdb._exceptions.OperationalError as err:
+            self.db_interface = self.init_db()
+        return self.db_interface.cursor(MySQLdb.cursors.DictCursor)
+
+    def check_connection_to_db(action_on_db):
+        def _fn(self, *args, **kwargs):
+            self.get_cursor()
+            return action_on_db(self, *args, **kwargs)
+        return _fn
 
     def add_new_product_type(self, new_product_type):
         self.add_new_record_to_table(PRODUCT_TYPES, new_product_type)
@@ -21,6 +38,7 @@ class DataBaseInterface:
         self.add_new_record_to_table(PRODUCTS, new_product)
         #todo   return sth?
 
+    @check_connection_to_db
     def add_new_record_to_table(self, table, input):
         attributes = ','.join([f" {k}" for k in input.keys()])
         values = ','.join([f"'{k}'" for k in input.values()])
@@ -31,6 +49,7 @@ class DataBaseInterface:
 
         #todo   check response?
 
+    @check_connection_to_db
     def fetch_all_product_types_with_products(self):
         product_types = self.fetch_all_records_from_table(PRODUCT_TYPES)
         columns_from_products = 'product_id, amount, exp_date, note'
@@ -44,8 +63,9 @@ class DataBaseInterface:
             product_type.update({'product_list': rows})
 
             exp_date = ''
-            if [x for x in rows if not '' and x['exp_date'] != '']:
-                a = min([datetime.strptime(product['exp_date'], '%d.%m.%Y') for product in rows])
+            rows_with_exp_date_not_empty = [x for x in rows if not '' and x['exp_date'] != '']
+            if rows_with_exp_date_not_empty:
+                a = min([datetime.strptime(product['exp_date'], '%d.%m.%Y') for product in rows_with_exp_date_not_empty])
                 exp_date = a.strftime("%d.%m.%Y")
             product_type.update({'exp_date': exp_date})
 
