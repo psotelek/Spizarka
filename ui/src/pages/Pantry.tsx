@@ -1,9 +1,9 @@
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { getPantry } from "../api/Api"
+import { getPantry, getPantryOnline } from "../api/Api"
 import { StockTable } from "../component/StockTable"
 
-interface Category {
+export interface Category {
   id: string
   name: string
   amount: number
@@ -15,6 +15,7 @@ interface Category {
 
 interface Product {
   id: string
+  name: string
   amount: number
   expiry_date: string
   note: string
@@ -23,10 +24,16 @@ interface Product {
 export const Pantry = () => {
     const [rows, setRows] = useState<Category[]>([])
 
-      useEffect(() => {
+    useEffect(() => {
       setRows(getPantry())
     }, [])
-    
+
+    /* 
+    getPantryOnline().then((data) => {
+      setRows(data)
+    })
+    */
+
     return <Grid 
       container 
       spacing={2}
