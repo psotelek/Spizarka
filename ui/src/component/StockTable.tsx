@@ -7,7 +7,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import CheckIcon from '@mui/icons-material/Check';
 import React from 'react';
 import { Category, Product } from '../pages/Pantry';
-import { removeProduct } from '../api/Api';
+import { removeCategory, removeProduct } from '../api/Api';
 
 
 interface CellProps {
@@ -39,18 +39,37 @@ export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
                 <EditableTableCell>{row.amount} {row.measure}</EditableTableCell>
                 <EditableTableCell>{row.expiryDate}</EditableTableCell>
                 <TableCell>
-                    <Grid container>
-                        <Grid item xs={6}>
-                            <IconButton aria-label="edit" onClick={() => props.onEdit(row)}>
-                                <EditIcon />
-                            </IconButton>
+                    {edit ?
+                        <Grid container>
+                            <Grid item xs={6}>
+                                <IconButton aria-label="confirm" onClick={() => {
+                                    props.onEdit(row)
+                                    setEdit(false)
+                                }}>
+                                    <CheckIcon />
+                                </IconButton>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <IconButton aria-label="cancel" onClick={e => setEdit(false)}>
+                                    <HighlightOffIcon />
+                                </IconButton>
+                            </Grid>
+                        </Grid> :
+                        <Grid container>
+                            <Grid item xs={6}>
+                                <IconButton aria-label="edit" onClick={() => {
+                                    setEdit(true)
+                                }}>
+                                    <EditIcon />
+                                </IconButton>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <IconButton aria-label="delete" onClick={e => removeCategory()}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={6}>
-                            <IconButton aria-label="delete">
-                                <DeleteIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
+                    }
                 </TableCell>
             </TableRow>
             <TableRow>
