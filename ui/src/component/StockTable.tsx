@@ -15,7 +15,9 @@ interface CellProps {
 }
 
 export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => {
-    return <TableCell>{props.children}</TableCell>
+    return props.isEdited ?
+        <TableCell><TextField value={props.children} variant="standard" /></TableCell> :
+        <TableCell>{props.children}</TableCell>
 }
 
 export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
@@ -80,13 +82,20 @@ export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
                                 {row.name}
                             </Typography>
                             <Table>
+                                <colgroup>
+                                    <col width="20%" />
+                                    <col width="20%" />
+                                    <col width="20%" />
+                                    <col width="30%" />
+                                    <col width="30%" />
+                                </colgroup>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell />
                                         <TableCell>Name</TableCell>
                                         <TableCell>Amount</TableCell>
                                         <TableCell>Expiry Date</TableCell>
                                         <TableCell>Note</TableCell>
+                                        <TableCell>Action</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -108,11 +117,10 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
     const [edit, setEdit] = React.useState(false);
 
     return <TableRow key={row.id}>
-        <TableCell />
-        <TableCell>{row.name}</TableCell>
-        <TableCell>{row.amount} {props.measure}</TableCell>
-        <TableCell>{row.expiryDate}</TableCell>
-        <TableCell>{row.note}</TableCell>
+        <EditableTableCell isEdited={edit}>{row.name}</EditableTableCell>
+        <EditableTableCell isEdited={edit}>{row.amount} {props.measure}</EditableTableCell>
+        <EditableTableCell isEdited={edit}>{row.expiryDate}</EditableTableCell>
+        <EditableTableCell isEdited={edit}>{row.note}</EditableTableCell>
         <TableCell>
             {edit ?
                 <Grid container>
