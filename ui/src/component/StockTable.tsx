@@ -3,6 +3,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import CheckIcon from '@mui/icons-material/Check';
 import React from 'react';
 import { Category, Product } from '../pages/Pantry';
 import { removeProduct } from '../api/Api';
@@ -19,6 +21,7 @@ export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => 
 export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
+    const [edit, setEdit] = React.useState(false);
 
     return (
         <React.Fragment>
@@ -81,7 +84,7 @@ export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
     )
 }
 
-export const ProductRow = (props: { row: Product; measure: string; onEdit: Function}) => {
+export const ProductRow = (props: { row: Product; measure: string; onEdit: Function }) => {
     const { row } = props;
     const [edit, setEdit] = React.useState(false);
 
@@ -92,26 +95,42 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
         <TableCell>{row.expiryDate}</TableCell>
         <TableCell>{row.note}</TableCell>
         <TableCell>
-            <Grid container>
-                <Grid item xs={6}>
-                    <IconButton aria-label="edit" onClick={() => {
-                            setEdit(true)
+            {edit ?
+                <Grid container>
+                    <Grid item xs={6}>
+                        <IconButton aria-label="confirm" onClick={() => {
                             props.onEdit(row)
+                            setEdit(false)
                         }}>
-                        <EditIcon />
-                    </IconButton>
+                            <CheckIcon />
+                        </IconButton>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <IconButton aria-label="cancel" onClick={e => setEdit(false)}>
+                            <HighlightOffIcon />
+                        </IconButton>
+                    </Grid>
+                </Grid> :
+                <Grid container>
+                    <Grid item xs={6}>
+                        <IconButton aria-label="edit" onClick={() => {
+                            setEdit(true)
+                        }}>
+                            <EditIcon />
+                        </IconButton>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <IconButton aria-label="delete" onClick={e => removeProduct()}>
+                            <DeleteIcon />
+                        </IconButton>
+                    </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                    <IconButton aria-label="delete" onClick={e => removeProduct()}>
-                        <DeleteIcon />
-                    </IconButton>
-                </Grid>
-            </Grid>
+            }
         </TableCell>
     </TableRow>
 }
 
-export const StockTable = (props: { rows: Category[]; onEdit: Function}) => {
+export const StockTable = (props: { rows: Category[]; onEdit: Function }) => {
     return <TableContainer component={Paper}>
         <Table>
             <TableHead>
@@ -125,7 +144,7 @@ export const StockTable = (props: { rows: Category[]; onEdit: Function}) => {
             </TableHead>
             <TableBody>
                 {props.rows.map((row: Category) => (
-                    <CollapsibleRow row={row} onEdit={props.onEdit}/>
+                    <CollapsibleRow row={row} onEdit={props.onEdit} />
                 ))}
             </TableBody>
         </Table>
