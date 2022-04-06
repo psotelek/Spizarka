@@ -6,13 +6,13 @@ import { Pantry } from './pages/Pantry';
 
 function App() {
   return (
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="pantry" element={<Pantry />} />
-        </Routes>
-      </div>
-    );
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="pantry" element={<Pantry />} />
+      </Routes>
+    </div>
+  );
 }
 
 function Home() {
@@ -24,8 +24,8 @@ function Home() {
           Czy w lodówce jest jedzenie?
         </p>
         <nav>
-        <Link to="/pantry">Sprawdź</Link>
-      </nav>
+          <Link to="/pantry">Sprawdź</Link>
+        </nav>
       </header>
     </div>
   );
