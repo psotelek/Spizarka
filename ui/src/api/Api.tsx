@@ -20,11 +20,11 @@ export const getPantryOnline = () => {
         })
 }
 
-export const addCategory = () => {
+export const createCategory = () => {
     alert("Added Category")
 }
 
-export const addProduct = () => {
+export const createProduct = () => {
     alert("Added Product")
 }
 
