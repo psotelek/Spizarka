@@ -1,8 +1,9 @@
+import { OptionUnstyled } from "@mui/base"
 import { Category } from "@mui/icons-material"
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { createCategory, createProduct, editCategory, editProduct, getPantry, getPantryOnline } from "../api/Api"
-import { CategoryDialog } from "../component/Dialog"
+import { CategoryDialog } from "../component/CategoryDialog"
 import { StockTable } from "../component/StockTable"
 
 export interface Category {
@@ -28,8 +29,8 @@ const isCategory = (item: Category | Product): item is Category => {
 }
 
 export const Pantry = () => {
-  const [rows, setRows] = useState<Category[]>([])
-  const [categoryDialog, setCategoryDialog] = useState(false)
+  const [rows, setRows] = useState<Category[]>([]);
+  const [categoryDialog, setCategoryDialog] = useState(false);
 
 
   useEffect(() => {
@@ -42,17 +43,17 @@ export const Pantry = () => {
 
   const handleCreate = (created: Category | Product) => {
     if (isCategory(created)) {
-      createCategory()
+      createCategory();
     } else {
-      createProduct()
+      createProduct();
     }
   }
 
   const handleEdit = (edited: Category | Product) => {
     if (isCategory(edited)) {
-      editCategory()
+      editCategory();
     } else {
-      editProduct()
+      editProduct();
     }
   }
 
@@ -61,11 +62,11 @@ export const Pantry = () => {
   }
 
   const closeCategoryDialog = () => {
-    setCategoryDialog(false)
+    setCategoryDialog(false);
   }
 
   const openCategoryDialog = () => {
-    setCategoryDialog(true)
+    setCategoryDialog(true);
   }
 
   return (

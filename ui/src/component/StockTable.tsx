@@ -1,17 +1,25 @@
-import { Box, Collapse, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
+import { Box, breadcrumbsClasses, Collapse, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import CheckIcon from '@mui/icons-material/Check';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React from 'react';
 import { Category, Product } from '../pages/Pantry';
-import { removeCategory, removeProduct } from '../api/Api';
+import { createProduct, editCategory, removeCategory, removeProduct } from '../api/Api';
+import { OptionPopper } from './CategoryOptionsDialog';
 
 
 interface CellProps {
     isEdited?: boolean
+}
+
+export interface CategoryActions {
+    addProduct: string;
+    editCategory: string;
+    removeCategory: string;
 }
 
 export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => {
@@ -20,11 +28,36 @@ export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => 
         <TableCell>{props.children}</TableCell>
 }
 
-export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
+export const CategoryRow = (props: { row: Category; onEdit: Function }) => {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
     const [edit, setEdit] = React.useState(false);
+    const [categoryOptionDialog, setCategoryOptionDialog] = React.useState(false);
+    const [popperAnchor, setPopperAnchor] = React.useState<null | HTMLElement>(null);
 
+    const actions = { addProduct: "Dodaj produkt", editCategory: "Edytuj kategorię", removeCategory: "Usuń kategorię" }
+
+    const openOptionDialog = (event: React.MouseEvent<HTMLElement>) => {
+        setPopperAnchor(event.currentTarget);
+        setCategoryOptionDialog((previousState) => !previousState);
+    }
+
+    const handleOptionClick = (option: string) => {
+        switch (option) {
+            case "addProduct":
+                createProduct();
+                break;
+            case "editCategory":
+                editCategory();
+                break;
+            case "removeCategory":
+                removeCategory();
+                break;
+            default:
+                console.log("Error!");
+        }
+    }
+    console.log("pritn")
     return (
         <React.Fragment>
             <TableRow key={row.id}>
@@ -37,41 +70,18 @@ export const CollapsibleRow = (props: { row: Category; onEdit: Function }) => {
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-                <EditableTableCell>{row.name}</EditableTableCell>
-                <EditableTableCell>{row.amount} {row.measure}</EditableTableCell>
-                <EditableTableCell>{row.expiryDate}</EditableTableCell>
-                <TableCell>
-                    {edit ?
-                        <Grid container>
-                            <Grid item xs={6}>
-                                <IconButton aria-label="confirm" onClick={() => {
-                                    props.onEdit(row)
-                                    setEdit(false)
-                                }}>
-                                    <CheckIcon />
-                                </IconButton>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <IconButton aria-label="cancel" onClick={e => setEdit(false)}>
-                                    <HighlightOffIcon />
-                                </IconButton>
-                            </Grid>
-                        </Grid> :
-                        <Grid container>
-                            <Grid item xs={6}>
-                                <IconButton aria-label="edit" onClick={() => {
-                                    setEdit(true)
-                                }}>
-                                    <EditIcon />
-                                </IconButton>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <IconButton aria-label="delete" onClick={e => removeCategory()}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Grid>
-                        </Grid>
-                    }
+                <TableCell>{row.name}</TableCell>
+                <TableCell>{row.amount} {row.measure}</TableCell>
+                <TableCell>{row.expiryDate}</TableCell>
+                <TableCell><IconButton aria-label="confirm" onClick={openOptionDialog}>
+                    <MoreVertIcon />
+                    <OptionPopper
+                        actionList={actions}
+                        handleOptionClick={handleOptionClick}
+                        popperAnchor={popperAnchor}
+                        open={categoryOptionDialog}
+                    />
+                </IconButton>
                 </TableCell>
             </TableRow>
             <TableRow>
@@ -158,6 +168,7 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
 }
 
 export const StockTable = (props: { rows: Category[]; onEdit: Function }) => {
+
     return <TableContainer component={Paper}>
         <Table>
             <TableHead>
@@ -171,7 +182,7 @@ export const StockTable = (props: { rows: Category[]; onEdit: Function }) => {
             </TableHead>
             <TableBody>
                 {props.rows.map((row: Category) => (
-                    <CollapsibleRow row={row} onEdit={props.onEdit} />
+                    <CategoryRow row={row} onEdit={props.onEdit} />
                 ))}
             </TableBody>
         </Table>
