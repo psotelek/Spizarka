@@ -36,10 +36,10 @@ export const editProduct = () => {
     alert("Edited Product")
 }
 
-export const removeCategory = () => {
+export const deleteCategory = () => {
     alert("Removed Category")
 }
 
-export const removeProduct = () => {
+export const deleteProduct = () => {
     alert("Removed Product")
 }

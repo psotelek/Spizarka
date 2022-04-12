@@ -2,7 +2,7 @@ import { OptionUnstyled } from "@mui/base"
 import { Category } from "@mui/icons-material"
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { createCategory, createProduct, editCategory, editProduct, getPantry, getPantryOnline } from "../api/Api"
+import { createCategory, createProduct, deleteCategory, deleteProduct, editCategory, editProduct, getPantry, getPantryOnline } from "../api/Api"
 import { CategoryDialog } from "../component/CategoryDialog"
 import { StockTable } from "../component/StockTable"
 
@@ -22,6 +22,12 @@ export interface Product {
   amount: number
   expiryDate: string
   note: string
+}
+
+export interface Actions {
+  create: (arg0: Product | Category) => void,
+  edit: (arg0: Product | Category) => void,
+  delete: (arg0: Product | Category) => void,
 }
 
 const isCategory = (item: Category | Product): item is Category => {
@@ -58,7 +64,11 @@ export const Pantry = () => {
   }
 
   const handleDelete = (deleted: Category | Product) => {
-
+    if (isCategory(deleted)) {
+      deleteCategory();
+    } else {
+      deleteProduct();
+    }
   }
 
   const closeCategoryDialog = () => {
@@ -68,6 +78,8 @@ export const Pantry = () => {
   const openCategoryDialog = () => {
     setCategoryDialog(true);
   }
+
+  const actions = { create: handleCreate, edit: handleEdit, delete: handleDelete } as Actions;
 
   return (
     <div>
@@ -102,7 +114,7 @@ export const Pantry = () => {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <StockTable rows={rows} onEdit={handleEdit} />
+          <StockTable rows={rows} actions={actions} />
         </Grid>
       </Grid>
     </div>

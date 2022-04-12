@@ -6,9 +6,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import CheckIcon from '@mui/icons-material/Check';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import React from 'react';
-import { Category, Product } from '../pages/Pantry';
-import { createProduct, editCategory, removeCategory, removeProduct } from '../api/Api';
+import React, { useEffect } from 'react';
+import { Actions, Category, Product } from '../pages/Pantry';
+import { createProduct, editCategory, deleteCategory, deleteProduct } from '../api/Api';
 import { OptionPopper } from './CategoryOptionsDialog';
 
 
@@ -28,14 +28,13 @@ export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => 
         <TableCell>{props.children}</TableCell>
 }
 
-export const CategoryRow = (props: { row: Category; onEdit: Function }) => {
-    const { row } = props;
+export const CategoryRow = (props: { row: Category; actions: Actions }) => {
+    const { row, actions } = props;
     const [open, setOpen] = React.useState(false);
-    const [edit, setEdit] = React.useState(false);
     const [categoryOptionDialog, setCategoryOptionDialog] = React.useState(false);
     const [popperAnchor, setPopperAnchor] = React.useState<null | HTMLElement>(null);
 
-    const actions = { addProduct: "Dodaj produkt", editCategory: "Edytuj kategorię", removeCategory: "Usuń kategorię" }
+    const actionMenu = { addProduct: "Dodaj produkt", editCategory: "Edytuj kategorię", removeCategory: "Usuń kategorię" }
 
     const openOptionDialog = (event: React.MouseEvent<HTMLElement>) => {
         setPopperAnchor(event.currentTarget);
@@ -45,19 +44,19 @@ export const CategoryRow = (props: { row: Category; onEdit: Function }) => {
     const handleOptionClick = (option: string) => {
         switch (option) {
             case "addProduct":
-                createProduct();
+                row.products.push({name: "", amount: 0, expiryDate: "", note: ""})
                 break;
             case "editCategory":
-                editCategory();
+                actions.edit(row);
                 break;
             case "removeCategory":
-                removeCategory();
+                actions.delete(row);
                 break;
             default:
                 console.log("Error!");
         }
     }
-    console.log("pritn")
+
     return (
         <React.Fragment>
             <TableRow key={row.id}>
@@ -76,7 +75,7 @@ export const CategoryRow = (props: { row: Category; onEdit: Function }) => {
                 <TableCell><IconButton aria-label="confirm" onClick={openOptionDialog}>
                     <MoreVertIcon />
                     <OptionPopper
-                        actionList={actions}
+                        actionList={actionMenu}
                         handleOptionClick={handleOptionClick}
                         popperAnchor={popperAnchor}
                         open={categoryOptionDialog}
@@ -110,7 +109,7 @@ export const CategoryRow = (props: { row: Category; onEdit: Function }) => {
                                 </TableHead>
                                 <TableBody>
                                     {row.products.map((product) => (
-                                        <ProductRow row={product} measure={row.measure} onEdit={props.onEdit} />
+                                        <ProductRow row={product} measure={row.measure} onEdit={props.actions.edit} />
                                     ))}
                                 </TableBody>
                             </Table>
@@ -125,6 +124,13 @@ export const CategoryRow = (props: { row: Category; onEdit: Function }) => {
 export const ProductRow = (props: { row: Product; measure: string; onEdit: Function }) => {
     const { row } = props;
     const [edit, setEdit] = React.useState(false);
+    console.log(row.id)
+    useEffect(() => {
+        if (row.id === undefined) {
+            setEdit(true)
+            row.id = -1
+        }
+    }, [])
 
     return <TableRow key={row.id}>
         <EditableTableCell isEdited={edit}>{row.name}</EditableTableCell>
@@ -157,7 +163,7 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
                         </IconButton>
                     </Grid>
                     <Grid item xs={6}>
-                        <IconButton aria-label="delete" onClick={e => removeProduct()}>
+                        <IconButton aria-label="delete" onClick={e => deleteProduct()}>
                             <DeleteIcon />
                         </IconButton>
                     </Grid>
@@ -167,7 +173,7 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
     </TableRow>
 }
 
-export const StockTable = (props: { rows: Category[]; onEdit: Function }) => {
+export const StockTable = (props: { rows: Category[]; actions: Actions }) => {
 
     return <TableContainer component={Paper}>
         <Table>
@@ -182,7 +188,7 @@ export const StockTable = (props: { rows: Category[]; onEdit: Function }) => {
             </TableHead>
             <TableBody>
                 {props.rows.map((row: Category) => (
-                    <CategoryRow row={row} onEdit={props.onEdit} />
+                    <CategoryRow row={row} actions={props.actions} />
                 ))}
             </TableBody>
         </Table>
