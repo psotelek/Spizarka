@@ -1,3 +1,5 @@
+import React from "react";
+
 export const getPantry = () => {
     return [{
         id: 1, name: "masło", amount: 3, measure: "szt", expiryDate: "12-01-2023", type: "food", products: [

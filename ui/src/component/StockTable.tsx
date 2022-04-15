@@ -7,8 +7,8 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import CheckIcon from '@mui/icons-material/Check';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React, { useEffect } from 'react';
-import { Actions, Category, Product } from '../pages/Pantry';
-import { createProduct, editCategory, deleteCategory, deleteProduct } from '../api/Api';
+import { Actions, Category, PantryContext, Product } from '../pages/Pantry';
+import { deleteProduct } from '../api/Api';
 import { OptionPopper } from './CategoryOptionsDialog';
 
 
@@ -28,12 +28,12 @@ export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => 
         <TableCell>{props.children}</TableCell>
 }
 
-export const CategoryRow = (props: { row: Category; actions: Actions }) => {
-    const { row, actions } = props;
+export const CategoryRow = (props: { row: Category }) => {
+    const { row } = props;
     const [open, setOpen] = React.useState(false);
     const [categoryOptionDialog, setCategoryOptionDialog] = React.useState(false);
     const [popperAnchor, setPopperAnchor] = React.useState<null | HTMLElement>(null);
-
+    const actions = React.useContext(PantryContext);
     const actionMenu = { addProduct: "Dodaj produkt", editCategory: "Edytuj kategorię", removeCategory: "Usuń kategorię" }
 
     const openOptionDialog = (event: React.MouseEvent<HTMLElement>) => {
@@ -44,13 +44,13 @@ export const CategoryRow = (props: { row: Category; actions: Actions }) => {
     const handleOptionClick = (option: string) => {
         switch (option) {
             case "addProduct":
-                row.products.push({name: "", amount: 0, expiryDate: "", note: ""})
+                actions?.clientAdd({ id: -1, name: "", amount: 0, expiryDate: "", note: "" }, row);
                 break;
             case "editCategory":
-                actions.edit(row);
+                actions?.edit(row);
                 break;
             case "removeCategory":
-                actions.delete(row);
+                actions?.delete(row);
                 break;
             default:
                 console.log("Error!");
@@ -109,7 +109,7 @@ export const CategoryRow = (props: { row: Category; actions: Actions }) => {
                                 </TableHead>
                                 <TableBody>
                                     {row.products.map((product) => (
-                                        <ProductRow row={product} measure={row.measure} onEdit={props.actions.edit} />
+                                        <ProductRow row={product} category={row} />
                                     ))}
                                 </TableBody>
                             </Table>
@@ -121,20 +121,19 @@ export const CategoryRow = (props: { row: Category; actions: Actions }) => {
     )
 }
 
-export const ProductRow = (props: { row: Product; measure: string; onEdit: Function }) => {
+export const ProductRow = (props: { row: Product; category: Category }) => {
     const { row } = props;
     const [edit, setEdit] = React.useState(false);
-    console.log(row.id)
+    const actions = React.useContext(PantryContext);
     useEffect(() => {
-        if (row.id === undefined) {
-            setEdit(true)
-            row.id = -1
+        if (row.id === -1) {
+            setEdit(true);
         }
-    }, [])
+    }, [row])
 
     return <TableRow key={row.id}>
         <EditableTableCell isEdited={edit}>{row.name}</EditableTableCell>
-        <EditableTableCell isEdited={edit}>{row.amount} {props.measure}</EditableTableCell>
+        <EditableTableCell isEdited={edit}>{row.amount} {props.category.measure}</EditableTableCell>
         <EditableTableCell isEdited={edit}>{row.expiryDate}</EditableTableCell>
         <EditableTableCell isEdited={edit}>{row.note}</EditableTableCell>
         <TableCell>
@@ -142,14 +141,23 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
                 <Grid container>
                     <Grid item xs={6}>
                         <IconButton aria-label="confirm" onClick={() => {
-                            props.onEdit(row)
-                            setEdit(false)
+                            if (row.id !== -1) {
+                                actions?.edit(row);
+                            } else {
+                                actions?.create(row);
+                            }
+                            setEdit(false);
                         }}>
                             <CheckIcon />
                         </IconButton>
                     </Grid>
                     <Grid item xs={6}>
-                        <IconButton aria-label="cancel" onClick={e => setEdit(false)}>
+                        <IconButton aria-label="cancel" onClick={e => {
+                            if (row.id === -1) {
+                                actions?.clientRemove(row, props.category);
+                            }
+                            setEdit(false);
+                        }}>
                             <HighlightOffIcon />
                         </IconButton>
                     </Grid>
@@ -173,7 +181,7 @@ export const ProductRow = (props: { row: Product; measure: string; onEdit: Funct
     </TableRow>
 }
 
-export const StockTable = (props: { rows: Category[]; actions: Actions }) => {
+export const StockTable = (props: { rows: Category[] }) => {
 
     return <TableContainer component={Paper}>
         <Table>
@@ -188,7 +196,7 @@ export const StockTable = (props: { rows: Category[]; actions: Actions }) => {
             </TableHead>
             <TableBody>
                 {props.rows.map((row: Category) => (
-                    <CategoryRow row={row} actions={props.actions} />
+                    <CategoryRow row={row} />
                 ))}
             </TableBody>
         </Table>

@@ -6,6 +6,8 @@ import { createCategory, createProduct, deleteCategory, deleteProduct, editCateg
 import { CategoryDialog } from "../component/CategoryDialog"
 import { StockTable } from "../component/StockTable"
 
+export const PantryContext = React.createContext<Actions | undefined>(undefined);
+
 export interface Category {
   id?: number
   name: string
@@ -28,6 +30,8 @@ export interface Actions {
   create: (arg0: Product | Category) => void,
   edit: (arg0: Product | Category) => void,
   delete: (arg0: Product | Category) => void,
+  clientAdd: (arg0: Product, arg1: Category) => void,
+  clientRemove: (arg0: Product, arg1: Category) => void
 }
 
 const isCategory = (item: Category | Product): item is Category => {
@@ -41,11 +45,7 @@ export const Pantry = () => {
 
   useEffect(() => {
     setRows(getPantry())
-  }, [])
-
-  // getPantryOnline().then((data) => {
-  //   setRows(data)
-  // })
+  }, []);
 
   const handleCreate = (created: Category | Product) => {
     if (isCategory(created)) {
@@ -71,6 +71,27 @@ export const Pantry = () => {
     }
   }
 
+  const handleLocalCreate = (created: Product, category: Category) => {
+    let items = [...rows];
+    let itemIndex = items.findIndex(item => item.id === category.id);
+    let item = {...items[itemIndex]};
+    item.products.unshift(created);
+    items[itemIndex] = item;
+    setRows(items);
+  }
+
+  const handleLocalDelete = (deleted: Product, category: Category) => {
+    let items = [...rows];
+    let categoryIndex = items.findIndex(item => item.id === category.id);
+    let item = {...items[categoryIndex]};
+    let productIndex = item.products.findIndex(item => item.id === -1);
+    item.products.splice(productIndex, 1);
+    items[categoryIndex] = item;
+    setRows(items);
+  }
+
+  const actions = { create: handleCreate, edit: handleEdit, delete: handleDelete, clientAdd: handleLocalCreate, clientRemove: handleLocalDelete } as Actions;
+
   const closeCategoryDialog = () => {
     setCategoryDialog(false);
   }
@@ -79,10 +100,8 @@ export const Pantry = () => {
     setCategoryDialog(true);
   }
 
-  const actions = { create: handleCreate, edit: handleEdit, delete: handleDelete } as Actions;
-
   return (
-    <div>
+    <PantryContext.Provider value={actions}>
       <CategoryDialog handleSave={handleCreate} handleClose={closeCategoryDialog} state={categoryDialog}/>
       <Grid
         container
@@ -114,10 +133,10 @@ export const Pantry = () => {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <StockTable rows={rows} actions={actions} />
+          <StockTable rows={rows} />
         </Grid>
       </Grid>
-    </div>
+    </PantryContext.Provider>
   )
 }
 
