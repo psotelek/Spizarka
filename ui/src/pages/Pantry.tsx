@@ -1,4 +1,3 @@
-import { OptionUnstyled } from "@mui/base"
 import { Category } from "@mui/icons-material"
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
@@ -13,8 +12,8 @@ export interface Category {
   name: string
   amount: number
   measure: string
-  expiryDate: string
-  type: string
+  expiry_date: string
+  category: string
   products: Array<Product>
 }
 
@@ -22,7 +21,7 @@ export interface Product {
   id?: number
   name: string
   amount: number
-  expiryDate: string
+  expiry_date: string
   note: string
 }
 
@@ -44,14 +43,14 @@ export const Pantry = () => {
 
 
   useEffect(() => {
-    getPantry().then(result => setRows(result));
+    getPantry().then((result: Category[]) => setRows(result));
   }, []);
 
   const handleCreate = (created: Category | Product) => {
     if (isCategory(created)) {
-      createCategory();
+      createCategory(created);
     } else {
-      createProduct();
+      createProduct(created);
     }
   }
 

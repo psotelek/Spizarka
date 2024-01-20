@@ -44,7 +44,7 @@ export const CategoryRow = (props: { row: Category }) => {
     const handleOptionClick = (option: string) => {
         switch (option) {
             case "addProduct":
-                actions?.clientAdd({ id: -1, name: "", amount: 0, expiryDate: "", note: "" }, row);
+                actions?.clientAdd({ id: -1, name: "", amount: 0, expiry_date: "", note: "" }, row);
                 break;
             case "editCategory":
                 actions?.edit(row);
@@ -71,7 +71,7 @@ export const CategoryRow = (props: { row: Category }) => {
                 </TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.amount} {row.measure}</TableCell>
-                <TableCell>{row.expiryDate}</TableCell>
+                <TableCell>{row.expiry_date}</TableCell>
                 <TableCell><IconButton aria-label="confirm" onClick={openOptionDialog}>
                     <MoreVertIcon />
                     <OptionPopper
@@ -134,7 +134,7 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
     return <TableRow key={row.id}>
         <EditableTableCell isEdited={edit}>{row.name}</EditableTableCell>
         <EditableTableCell isEdited={edit}>{row.amount} {props.category.measure}</EditableTableCell>
-        <EditableTableCell isEdited={edit}>{row.expiryDate}</EditableTableCell>
+        <EditableTableCell isEdited={edit}>{row.expiry_date}</EditableTableCell>
         <EditableTableCell isEdited={edit}>{row.note}</EditableTableCell>
         <TableCell>
             {edit ?

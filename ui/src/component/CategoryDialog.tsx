@@ -16,17 +16,17 @@ export const CategoryDialog = (props: { handleSave: (category: Category) => void
           autoFocus
           margin="dense"
           id="name"
-          label="Email Address"
-          type="email"
+          label="Category"
+          type="category"
           fullWidth
           variant="standard"
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={e => {
-          handleSave({ name: "", amount: 0, measure: "", expiryDate: "", type: "", products: [] })
+          handleSave({ name: "", amount: 0, measure: "", expiry_date: "", category: "", products: [] })
           handleClose()
-        }}>Stwórz produkt</Button>
+        }}>Stwórz kategorię</Button>
         <Button onClick={handleClose}>Anuluj</Button>
       </DialogActions>
     </Dialog>
