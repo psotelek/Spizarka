@@ -2,7 +2,7 @@ import { OptionUnstyled } from "@mui/base"
 import { Category } from "@mui/icons-material"
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { createCategory, createProduct, deleteCategory, deleteProduct, editCategory, editProduct, getPantry, getPantryOnline } from "../api/Api"
+import { createCategory, createProduct, deleteCategory, deleteProduct, editCategory, editProduct, getPantry } from "../api/Api"
 import { CategoryDialog } from "../component/CategoryDialog"
 import { StockTable } from "../component/StockTable"
 
@@ -44,7 +44,7 @@ export const Pantry = () => {
 
 
   useEffect(() => {
-    setRows(getPantry())
+    getPantry().then(result => setRows(result));
   }, []);
 
   const handleCreate = (created: Category | Product) => {
