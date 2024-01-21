@@ -55,16 +55,16 @@ def remove_category(category_id: int):
     return db.remove_category(category_id)
 
 
-@app.post("/editProduct")
-def edit_product(product: Product):
+@app.put("/editProduct")
+def edit_product(product_id: int, product: Product):
     product_dict = product.dict()
-    return db.edit_product(product_dict)
+    return db.edit_product(product_id, product_dict)
 
 
-@app.post("/editCategory")
-def edit_category(product_type: ProductType):
+@app.put("/editCategory")
+def edit_category(category_id: int, product_type: ProductType):
     product_type_dict = product_type.dict()
-    return db.edit_category(product_type_dict)
+    return db.edit_category(category_id, product_type_dict)
 
 
 @app.get("/getAll")
