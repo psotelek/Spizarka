@@ -39,20 +39,17 @@ export const editProduct = () => {
 }
 
 export const deleteCategory = (id: number) => {
-    fetch('http://localhost:8000/removeCategory', {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(id)
+    fetch('http://localhost:8000/removeCategory?' + new URLSearchParams({
+        'category_id':id.toString()
+    }), {
+        method: 'DELETE'
     })
 }
 
 export const deleteProduct = (id: number) => {
     fetch('http://localhost:8000/removeProduct?' + new URLSearchParams({
-        'id': id.toString()
+        'product_id':id.toString()
     }), {
-        method: 'DELETE',
+        method: 'DELETE'
     })
 }

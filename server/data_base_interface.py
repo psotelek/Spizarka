@@ -19,7 +19,7 @@ PASSWORD = "Mysql55!"
 class DataBaseInterface:
     def __init__(self):
         logging.basicConfig(format='%(asctime)s - %(levelname)s- %(message)s', datefmt='[%d-%m-%Y %H:%M:%S]',
-                            filename='data_base_interface.log', level='DEBUG')
+                            filename='data_base_interface.log', level='INFO')
         self.connection = self.init_db()
         self.cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
         self.connection.autocommit(True)
@@ -65,6 +65,14 @@ class DataBaseInterface:
                 logging.error(f"Logging failed: {e}")
             self.cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
 
+    def log_request(request, *args, **kwargs):
+        def _fn(self, *args, **kwargs):
+            logging.info(f"Request from GUI: {request}, {args}, {kwargs}")
+            result = request(self, *args, **kwargs)
+            request(self, *args, **kwargs)
+            return result
+        return _fn
+
     def check_connection_to_db(action_on_db):
         def _fn(self, *args, **kwargs):
             self.get_cursor()
@@ -82,10 +90,12 @@ class DataBaseInterface:
         except Exception as e:
             logging.error(f"[FAILED] Execution of statement in DB: '{statement}',\n {e}")
 
+    @log_request
     def add_category(self, new_category):
         self.add_new_record_to_table(CATEGORY, new_category)
         # todo   return sth?
 
+    @log_request
     def add_product(self, new_product):
         self.add_new_record_to_table(PRODUCT, new_product)
         # todo   return sth?
@@ -93,24 +103,49 @@ class DataBaseInterface:
     @check_connection_to_db
     def add_new_record_to_table(self, table, record):
         attributes = ','.join([f"{k}" for k in record.keys()])
-        values = ','.join([f"'{k}'" for k in record.values()])
+        values = ','.join([f"'{v}'" for v in record.values()])
         statement = f"INSERT INTO {table} ({attributes}) VALUES ({values})"
         self.try_to_execute_statement(statement)
         # todo   check response?
 
-    @check_connection_to_db
-    def remove_product(self, product_id):
-        statement = f"DELETE FROM {PRODUCT} WHERE id = {product_id}"
-        self.try_to_execute_statement(statement)
-
+    @log_request
     @check_connection_to_db
     def remove_category(self, category_id):
+        category_id = str(category_id)
         statement = f"DELETE FROM {CATEGORY} WHERE id = {category_id}"
         self.try_to_execute_statement(statement)
         statement = f"DELETE FROM {PRODUCT} WHERE category = {category_id}"
         self.try_to_execute_statement(statement)
 
+    @log_request
     @check_connection_to_db
+    def remove_product(self, product_id):
+        product_id = str(product_id)
+        statement = f"DELETE FROM {PRODUCT} WHERE id = {product_id}"
+        self.try_to_execute_statement(statement)
+
+    @log_request
+    @check_connection_to_db
+    def edit_product(self, product):
+        self.edit_record(PRODUCT, product)
+
+    @check_connection_to_db
+    def edit_category(self, category):
+        self.edit_record(CATEGORY, category)
+
+    @check_connection_to_db
+    def edit_record(self, table, record):
+        # attributes = ','.join([f"{k}" for k in record.keys()])
+        # values = ','.join([f"'{v}'" for v in record.values()])
+        record_id = record.pop("id")
+        k_v = ', '.join([f"{k}='{v}'" for k, v in record.items()])
+        statement = f"UPDATE {table} SET {k_v} WHERE id = {record_id}"
+        self.try_to_execute_statement(statement)
+
+
+
+    @check_connection_to_db
+    @log_request
     def fetch_all_categories_with_products(self):
         all_category = self._fetch_all_records_from_table(CATEGORY)
         columns_from_products = 'id, amount, expiry_date, note, name'
@@ -152,9 +187,10 @@ class DataBaseInterface:
 
 # if __name__ == "__main__":
 #     db = DataBaseInterface()
-#     print(pprint.pformat(db.fetch_all_categories_with_products()))
-#     db.add_category({'name': 'Kukurydza', 'category': 'Jedzenie', 'measure': 'szt'})
-#     print(pprint.pformat(db.fetch_all_categories_with_products()))
-#     db.add_product({'category': '1', 'amount': '1', 'note': '340g', 'name': '', 'expiry_date': '01.01.2022'})
-#     db.remove_category('14')
-#     db.remove_product('14')
+    # print(pprint.pformat(db.fetch_all_categories_with_products()))
+    # db.add_category({'name': 'Kukurydza', 'category': 'Jedzenie', 'measure': 'szt'})
+    # print(pprint.pformat(db.fetch_all_categories_with_products()))
+    # db.add_product({'category': '1', 'amount': '1', 'note': '340g', 'name': '', 'expiry_date': '01.01.2022'})
+    # db.edit_product({'id': '7', 'category': '1', 'amount': '1', 'note': '350g', 'name': '', 'expiry_date': '01.01.2022'})
+    # db.remove_category('14')
+    # db.remove_product('29')

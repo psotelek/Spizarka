@@ -40,18 +40,32 @@ def add_category(product_type: ProductType):
     product_type_dict = product_type.dict()
     return db.add_category(product_type_dict)
 
+
 @app.post("/addProduct")
 def add_product(product: Product):
     product_dict = product.dict()
     return db.add_product(product_dict)
 
-@app.post("/removeProduct")
-def remove_product(product):
-    return db.remove_product(product['id'])
+@app.delete("/removeProduct/")
+def remove_product(product_id: int):
+    return db.remove_product(product_id)
 
-@app.post("/removeCategory")
-def remove_category(product_type):
-    return db.remove_category(product_type['id'])
+@app.delete("/removeCategory")
+def remove_category(category_id: int):
+    return db.remove_category(category_id)
+
+
+@app.post("/editProduct")
+def edit_product(product: Product):
+    product_dict = product.dict()
+    return db.edit_product(product_dict)
+
+
+@app.post("/editCategory")
+def edit_category(product_type: ProductType):
+    product_type_dict = product_type.dict()
+    return db.edit_category(product_type_dict)
+
 
 @app.get("/getAll")
 def read_id():
