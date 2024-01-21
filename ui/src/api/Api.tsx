@@ -1,5 +1,4 @@
-import React from "react";
-import { Category, Product } from "../pages/Pantry";
+import { ProductType, ProductInfo } from "domain/Product";
 
 export const getPantry = () => {
     return fetch("http://localhost:8000/getAll")
@@ -9,12 +8,26 @@ export const getPantry = () => {
         })
 }
 
-export const createCategory = (category: Category) => {
-    alert("Added Category")
+export const createProductType = (productType: ProductType) => {
+    fetch('http://localhost:8000/addType', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productType)
+    })
 }
 
-export const createProduct = (product: Product) => {
-    alert("Added Product")
+export const createProduct = (product: ProductInfo) => {
+    fetch('http://localhost:8000/addProduct', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product)
+    })
 }
 
 export const editCategory = () => {

@@ -1,4 +1,4 @@
-import { Box, breadcrumbsClasses, Collapse, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
+import { Box, Collapse, Grid, IconButton, Paper, Table, TableBody, TableCell, TableCellProps, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EditIcon from '@mui/icons-material/Edit';
@@ -6,14 +6,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import CheckIcon from '@mui/icons-material/Check';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import React, { useEffect } from 'react';
-import { Actions, Category, PantryContext, Product } from '../pages/Pantry';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import { PantryContext } from 'pages/Pantry';
+import { Category, Product } from 'domain/ProductView'
 import { deleteProduct } from '../api/Api';
 import { OptionPopper } from './CategoryOptionsDialog';
 
 
 interface CellProps {
-    isEdited?: boolean
+    property: string,
+    isEdited?: boolean,
+    props?: TableCellProps,
+    onChange: Dispatch<SetStateAction<{ type: number; amount: number; note: string; name: string; expiry_date: string; }>>
 }
 
 export interface CategoryActions {
@@ -23,9 +27,16 @@ export interface CategoryActions {
 }
 
 export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => {
+    const [value, setValue] = useState(props.children)
+
     return props.isEdited ?
-        <TableCell><TextField value={props.children} variant="standard" /></TableCell> :
-        <TableCell>{props.children}</TableCell>
+        <TableCell><TextField value={value} variant="standard" onChange={e => {
+            setValue(e.target.value)
+            props.onChange((prevChange) => {
+                return { ...prevChange, [props.property]: e.target.value }
+            })
+        }}/></TableCell> :
+        <TableCell>{value}</TableCell>
 }
 
 export const CategoryRow = (props: { row: Category }) => {
@@ -122,9 +133,16 @@ export const CategoryRow = (props: { row: Category }) => {
 }
 
 export const ProductRow = (props: { row: Product; category: Category }) => {
-    const { row } = props;
-    const [edit, setEdit] = React.useState(false);
-    const actions = React.useContext(PantryContext);
+    const { row, category } = props;
+    const [edit, setEdit] = useState(false);
+    const [newProduct, setNewProduct] = useState({
+        type: category.id,
+        amount: row.amount,
+        note: row.note,
+        name: row.name,
+        expiry_date: row.expiry_date
+    })
+    const actions = useContext(PantryContext);
     useEffect(() => {
         if (row.id === -1) {
             setEdit(true);
@@ -132,10 +150,13 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
     }, [row])
 
     return <TableRow key={row.id}>
-        <EditableTableCell isEdited={edit}>{row.name}</EditableTableCell>
-        <EditableTableCell isEdited={edit}>{row.amount} {props.category.measure}</EditableTableCell>
-        <EditableTableCell isEdited={edit}>{row.expiry_date}</EditableTableCell>
-        <EditableTableCell isEdited={edit}>{row.note}</EditableTableCell>
+        <EditableTableCell property={"name"} onChange={setNewProduct} isEdited={edit}>{row.name}</EditableTableCell>
+        <TableCell>
+            <EditableTableCell property={"amount"} onChange={setNewProduct} isEdited={edit}>{row.amount}</EditableTableCell>
+            <TableCell sx={{border: 'none'}}>{props.category.measure}</TableCell>
+        </TableCell>
+        <EditableTableCell property={"expiry_date"} onChange={setNewProduct} isEdited={edit}>{row.expiry_date}</EditableTableCell>
+        <EditableTableCell property={"note"} onChange={setNewProduct} isEdited={edit}>{row.note}</EditableTableCell>
         <TableCell>
             {edit ?
                 <Grid container>
@@ -144,7 +165,13 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
                             if (row.id !== -1) {
                                 actions?.edit(row);
                             } else {
-                                actions?.create(row);
+                                actions?.productCreate({
+                                    type: newProduct.type,
+                                    amount: newProduct.amount,
+                                    note: newProduct.note,
+                                    name: newProduct.name,
+                                    expiry_date: newProduct.expiry_date
+                                });
                             }
                             setEdit(false);
                         }}>

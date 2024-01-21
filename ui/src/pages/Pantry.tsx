@@ -1,32 +1,16 @@
-import { Category } from "@mui/icons-material"
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { createCategory, createProduct, deleteCategory, deleteProduct, editCategory, editProduct, getPantry } from "../api/Api"
+import { createProductType, createProduct, deleteCategory, deleteProduct, editCategory, editProduct, getPantry } from "../api/Api"
 import { CategoryDialog } from "../component/CategoryDialog"
 import { StockTable } from "../component/StockTable"
+import { ProductType, ProductInfo } from "domain/Product"
+import { Category, Product } from "domain/ProductView"
 
 export const PantryContext = React.createContext<Actions | undefined>(undefined);
 
-export interface Category {
-  id?: number
-  name: string
-  amount: number
-  measure: string
-  expiry_date: string
-  category: string
-  products: Array<Product>
-}
-
-export interface Product {
-  id?: number
-  name: string
-  amount: number
-  expiry_date: string
-  note: string
-}
-
 export interface Actions {
-  create: (arg0: Product | Category) => void,
+  productCreate: (arg0: ProductInfo) => void,
+  typeCreate: (arg0: ProductType) => void,
   edit: (arg0: Product | Category) => void,
   delete: (arg0: Product | Category) => void,
   clientAdd: (arg0: Product, arg1: Category) => void,
@@ -46,12 +30,12 @@ export const Pantry = () => {
     getPantry().then((result: Category[]) => setRows(result));
   }, []);
 
-  const handleCreate = (created: Category | Product) => {
-    if (isCategory(created)) {
-      createCategory(created);
-    } else {
-      createProduct(created);
-    }
+  const handleProductCreate = (product: ProductInfo) => {
+    createProduct(product)
+  }
+
+  const handleTypeCreate = (productType: ProductType) => {
+    createProductType(productType)
   }
 
   const handleEdit = (edited: Category | Product) => {
@@ -74,6 +58,9 @@ export const Pantry = () => {
     let items = [...rows];
     let itemIndex = items.findIndex(item => item.id === category.id);
     let item = {...items[itemIndex]};
+    if (item.products === undefined) {
+      item.products = []
+    }
     item.products.unshift(created);
     items[itemIndex] = item;
     setRows(items);
@@ -89,7 +76,13 @@ export const Pantry = () => {
     setRows(items);
   }
 
-  const actions = { create: handleCreate, edit: handleEdit, delete: handleDelete, clientAdd: handleLocalCreate, clientRemove: handleLocalDelete } as Actions;
+  const actions = { 
+    productCreate: handleProductCreate, 
+    typeCreate: handleTypeCreate,
+    edit: handleEdit, 
+    delete: handleDelete, 
+    clientAdd: handleLocalCreate, 
+    clientRemove: handleLocalDelete } as Actions;
 
   const closeCategoryDialog = () => {
     setCategoryDialog(false);
@@ -101,7 +94,7 @@ export const Pantry = () => {
 
   return (
     <PantryContext.Provider value={actions}>
-      <CategoryDialog handleSave={handleCreate} handleClose={closeCategoryDialog} state={categoryDialog}/>
+      <CategoryDialog handleSave={actions.typeCreate} handleClose={closeCategoryDialog} state={categoryDialog}/>
       <Grid
         container
         spacing={2}

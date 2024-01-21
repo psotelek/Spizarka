@@ -1,5 +1,5 @@
 import sqlite3 as sl
-import MySQLdb
+import pymysql as MySQLdb
 import logging
 from datetime import datetime
 
@@ -14,8 +14,7 @@ class DataBaseInterface:
         self.cursor = self.db_interface.cursor(MySQLdb.cursors.DictCursor)
 
     def init_db(self):
-        return MySQLdb.connect(host="localhost", port=3306, user="Paulina",
-                               password="Mysql55!", database="zapasy")
+        return MySQLdb.connect(host="127.0.0.1", port=3306, user="Paulina",password="Mysql55!", database="zapasy")
 
     def get_cursor(self):
         try:
