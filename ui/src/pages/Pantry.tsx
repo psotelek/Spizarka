@@ -12,7 +12,6 @@ export interface Actions {
   productCreate: (arg0: ProductInfo) => void,
   typeCreate: (arg0: ProductType) => void,
   edit: (arg0: Product | Category) => void,
-  delete: (arg0: Product | Category) => void,
   clientAdd: (arg0: Product, arg1: Category) => void,
   clientRemove: (arg0: Product, arg1: Category) => void
 }
@@ -46,14 +45,6 @@ export const Pantry = () => {
     }
   }
 
-  const handleDelete = (deleted: Category | Product) => {
-    if (isCategory(deleted)) {
-      deleteCategory();
-    } else {
-      deleteProduct();
-    }
-  }
-
   const handleLocalCreate = (created: Product, category: Category) => {
     let items = [...rows];
     let itemIndex = items.findIndex(item => item.id === category.id);
@@ -79,8 +70,7 @@ export const Pantry = () => {
   const actions = { 
     productCreate: handleProductCreate, 
     typeCreate: handleTypeCreate,
-    edit: handleEdit, 
-    delete: handleDelete, 
+    edit: handleEdit,
     clientAdd: handleLocalCreate, 
     clientRemove: handleLocalDelete } as Actions;
 

@@ -9,7 +9,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { PantryContext } from 'pages/Pantry';
 import { Category, Product } from 'domain/ProductView'
-import { deleteProduct } from '../api/Api';
+import { deleteCategory, deleteProduct } from '../api/Api';
 import { OptionPopper } from './CategoryOptionsDialog';
 
 
@@ -61,7 +61,7 @@ export const CategoryRow = (props: { row: Category }) => {
                 actions?.edit(row);
                 break;
             case "removeCategory":
-                actions?.delete(row);
+                deleteCategory(row.id)
                 break;
             default:
                 console.log("Error!");
@@ -198,7 +198,7 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
                         </IconButton>
                     </Grid>
                     <Grid item xs={6}>
-                        <IconButton aria-label="delete" onClick={e => deleteProduct()}>
+                        <IconButton aria-label="delete" onClick={e => deleteProduct(row.id)}>
                             <DeleteIcon />
                         </IconButton>
                     </Grid>

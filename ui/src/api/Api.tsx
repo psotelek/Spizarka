@@ -38,10 +38,24 @@ export const editProduct = () => {
     alert("Edited Product")
 }
 
-export const deleteCategory = () => {
-    alert("Removed Category")
+export const deleteCategory = (id: number) => {
+    fetch('http://localhost:8000/removeCategory', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({id: {id}})
+    })
 }
 
-export const deleteProduct = () => {
-    alert("Removed Product")
+export const deleteProduct = (id: number) => {
+    fetch('http://localhost:8000/removeProduct', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({id: {id}})
+    })
 }
