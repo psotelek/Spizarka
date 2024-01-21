@@ -5,7 +5,7 @@ export interface ProductType {
 }
 
 export interface ProductInfo {
-    type: number,
+    category: number,
     amount: number,
     note: string,
     name: string,

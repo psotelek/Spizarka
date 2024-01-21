@@ -5,7 +5,7 @@ import { ProductType } from "domain/Product";
 export const CategoryDialog = (props: { handleSave: (productType: ProductType) => void; handleClose: () => void; state: boolean }) => {
   const { handleSave, handleClose, state } = props
   const [measure, setMeasure] = React.useState("")
-  const [type, setType] = React.useState("")
+  const [category, setType] = React.useState("")
   const [name, setName] = React.useState("")
 
   return (
@@ -50,7 +50,7 @@ export const CategoryDialog = (props: { handleSave: (productType: ProductType) =
         <Button onClick={e => {
           handleSave({
             'name': name,
-            'category': type,
+            'category': category,
             'measure': measure
           })
           handleClose()

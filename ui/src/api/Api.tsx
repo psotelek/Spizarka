@@ -9,7 +9,7 @@ export const getPantry = () => {
 }
 
 export const createProductType = (productType: ProductType) => {
-    fetch('http://localhost:8000/addType', {
+    fetch('http://localhost:8000/addCategory', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',

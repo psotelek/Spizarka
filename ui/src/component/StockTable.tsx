@@ -17,7 +17,7 @@ interface CellProps {
     property: string,
     isEdited?: boolean,
     props?: TableCellProps,
-    onChange: Dispatch<SetStateAction<{ type: number; amount: number; note: string; name: string; expiry_date: string; }>>
+    onChange: Dispatch<SetStateAction<{ category: number; amount: number; note: string; name: string; expiry_date: string; }>>
 }
 
 export interface CategoryActions {
@@ -136,7 +136,7 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
     const { row, category } = props;
     const [edit, setEdit] = useState(false);
     const [newProduct, setNewProduct] = useState({
-        type: category.id,
+        category: category.id,
         amount: row.amount,
         note: row.note,
         name: row.name,
@@ -166,7 +166,7 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
                                 actions?.edit(row);
                             } else {
                                 actions?.productCreate({
-                                    type: newProduct.type,
+                                    category: newProduct.category,
                                     amount: newProduct.amount,
                                     note: newProduct.note,
                                     name: newProduct.name,
