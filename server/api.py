@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from data_base_interface import DataBaseInterface, PRODUCTS, PRODUCT_TYPES
+from data_base_interface import DataBaseInterface, PRODUCT, CATEGORY
 from typing import Optional
 from pydantic import BaseModel
 
@@ -28,47 +28,49 @@ class ProductType(BaseModel):
 
 
 class Product(BaseModel):
-    type: int
+    category: int
     name: str ##Optional[str]
     amount: int
     expiry_date: str ##Optional[str]
     note: str ##Optional[str]
 
 
-@app.post("/addType")
-def add_new_product_type(product_type: ProductType):
+@app.post("/addCategory")
+def add_category(product_type: ProductType):
     product_type_dict = product_type.dict()
-    return db.add_new_product_type(product_type_dict)
-
+    return db.add_category(product_type_dict)
 
 @app.post("/addProduct")
-def add_new_product(product: Product):
+def add_product(product: Product):
     product_dict = product.dict()
-    return db.add_new_product(product_dict)
+    return db.add_product(product_dict)
 
+@app.post("/removeProduct")
+def remove_product(product):
+    return db.remove_product(product['id'])
+
+@app.post("/removeCategory")
+def remove_category(product_type):
+    return db.remove_category(product_type['id'])
 
 @app.get("/getAll")
 def read_id():
-    return db.fetch_all_product_types_with_products()
+    return db.fetch_all_categories_with_products()
 
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to your todo list."}
 
-
-# A = ProductType(name="masło", category='Jedzenie', measure='szt')
-# add_new_product_type(A)
+# add_category(ProductType(name="Masło", category='Jedzenie', measure='szt'))
+# add_category(ProductType(name="Mydło w kostce", category='Kosmetyki', measure='szt'))
+# add_category(ProductType(name="Mydło w płynie", category='Kosmetyki', measure='ml'))
 #
-# AA = ProductType(name="mydło", category='kosmetyki', measure='szt')
-# add_new_product_type(AA)
-#
-# B = Product(type=2, amount=6, note='nie do jedzenia', name='', expiry_date='', )
-# add_new_product(B)
-#
-# BB = Product(type=1, amount=2, note='83%!!!!!!!!!', name='', expiry_date='22.04.2021')
-# add_new_product(BB)
-#
-# BBB = Product(type=1, amount=6, note='na ciasteczka', expiry_date='', name='')
-# add_new_product(BBB)
+# add_product(Product(category=2, amount=1, note='Lawendowe', name='Cztery Szpaki', expiry_date='10.10.2028'))
+# add_product(Product(category=2, amount=2, note='Malinowe', name='Cztery Szpaki', expiry_date='10.10.2027'))
+# add_product(Product(category=3, amount=3500, note='gruszkowe', name='W płynie Swonco', expiry_date='22.04.2021'))
+# add_product(Product(category=1, amount=18, note='', name='', expiry_date='01.01.2025'))
 # print(read_id())
+
+# remove_product([{'id': 1}])
+# remove_category([{'id':1}])

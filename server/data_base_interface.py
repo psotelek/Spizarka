@@ -1,128 +1,160 @@
 import sqlite3 as sl
-import pymysql as MySQLdb
+# import pymysql as MySQLdb
 import logging
+import MySQLdb
 from datetime import datetime
+import logging
+import pprint
 
-PRODUCT_TYPES = 'PRODUCT_TYPES'
-PRODUCTS = 'PRODUCTS'
+CATEGORY = 'CATEGORY'
+PRODUCT = 'PRODUCT'
+
+DATABASE = 'ZAPASY'
+HOST = 'localhost'
+PORT = 3306
+USER = "Paulina"
+PASSWORD = "Mysql55!"
 
 
 class DataBaseInterface:
     def __init__(self):
-        self.db_interface = self.init_db()
-        # self.db_interface.autocommit(True)
-        self.cursor = self.db_interface.cursor(MySQLdb.cursors.DictCursor)
+        logging.basicConfig(format='%(asctime)s - %(levelname)s- %(message)s', datefmt='[%d-%m-%Y %H:%M:%S]',
+                            filename='data_base_interface.log', level='DEBUG')
+        self.connection = self.init_db()
+        self.cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
+        self.connection.autocommit(True)
+        self.create_initial_tables()
 
+    # @staticmethod
     def init_db(self):
-        return MySQLdb.connect(host="127.0.0.1", port=3306, user="Paulina",password="Mysql55!", database="zapasy")
+        logging.debug(f"=" * 100)
+        logging.debug(f"Logging to mySql server")
+        try:
+            self.connection = MySQLdb.connect(host=HOST, port=PORT, user=USER, password=PASSWORD)
+        except Exception as e:
+            logging.error(f"Logging failed: {e}")
+        self.cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        statement = f"CREATE DATABASE IF NOT EXISTS {DATABASE} "
+        try:
+            self.try_to_execute_statement(statement)
+        except Exception as e:
+            logging.error(f"Database {DATABASE} creation failed: {e}")
+        connection = MySQLdb.connect(host=HOST, port=PORT, user=USER, password=PASSWORD, database=DATABASE, autocommit=True)
+        return connection
+
+    def create_initial_tables(self):
+        statement = f"CREATE TABLE IF NOT EXISTS {CATEGORY} " \
+                    f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, name text, category text, measure text, " \
+                    f"UNIQUE KEY(name(100), category(100)))"
+        self.try_to_execute_statement(statement)
+
+        statement = f"CREATE TABLE IF NOT EXISTS {PRODUCT} " \
+                    f"(id INTEGER PRIMARY KEY AUTO_INCREMENT, category integer, name text, amount integer, " \
+                    f"expiry_date text, note text)"
+        self.try_to_execute_statement(statement)
 
     def get_cursor(self):
         try:
-            self.db_interface.ping()
-        except MySQLdb._exceptions.OperationalError as err:
-            self.db_interface = self.init_db()
-        return self.db_interface.cursor(MySQLdb.cursors.DictCursor)
+            self.connection.ping()
+        except Exception as e:
+            logging.debug(f"{e}, Try to restore connection to mySql database: '{DATABASE}'...")
+            try:
+                self.connection = MySQLdb.connect(host=HOST, port=PORT, user=USER, password=PASSWORD, database=DATABASE)
+            except Exception as e:
+                logging.error(f"Logging failed: {e}")
+            self.cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
 
     def check_connection_to_db(action_on_db):
         def _fn(self, *args, **kwargs):
             self.get_cursor()
-            return action_on_db(self, *args, **kwargs)
+            result = action_on_db(self, *args, **kwargs)
+            self.connection.close()
+            return result
         return _fn
 
-    def add_new_product_type(self, new_product_type):
-        self.add_new_record_to_table(PRODUCT_TYPES, new_product_type)
-        #todo   return sth?
-
-    def add_new_product(self, new_product):
-        self.add_new_record_to_table(PRODUCTS, new_product)
-        #todo   return sth?
-
-    @check_connection_to_db
-    def add_new_record_to_table(self, table, input):
-        attributes = ','.join([f" {k}" for k in input.keys()])
-        values = ','.join([f"'{k}'" for k in input.values()])
-        statement = f"INSERT INTO {table} ({attributes}) VALUES ({values})"
-
-        self.cursor.execute(statement)
-        self.db_interface.commit()
-
-        #todo   check response?
-
-    @check_connection_to_db
-    def fetch_all_product_types_with_products(self):
-        product_types = self.fetch_all_records_from_table(PRODUCT_TYPES)
-        columns_from_products = 'id, amount, expiry_date, note'
-        for product_type in product_types:
-            statement = f"SELECT {columns_from_products} FROM {PRODUCTS} WHERE type = {product_type['id']}"
+    def try_to_execute_statement(self, statement):
+        try:
             self.cursor.execute(statement)
+            self.connection.commit()
+            logging.debug(f"[PASSED] Execution of statement in DB: '{statement}'")
+            return True
+        except Exception as e:
+            logging.error(f"[FAILED] Execution of statement in DB: '{statement}',\n {e}")
 
+    def add_category(self, new_category):
+        self.add_new_record_to_table(CATEGORY, new_category)
+        # todo   return sth?
+
+    def add_product(self, new_product):
+        self.add_new_record_to_table(PRODUCT, new_product)
+        # todo   return sth?
+
+    @check_connection_to_db
+    def add_new_record_to_table(self, table, record):
+        attributes = ','.join([f"{k}" for k in record.keys()])
+        values = ','.join([f"'{k}'" for k in record.values()])
+        statement = f"INSERT INTO {table} ({attributes}) VALUES ({values})"
+        self.try_to_execute_statement(statement)
+        # todo   check response?
+
+    @check_connection_to_db
+    def remove_product(self, product_id):
+        statement = f"DELETE FROM {PRODUCT} WHERE id = {product_id}"
+        self.try_to_execute_statement(statement)
+
+    @check_connection_to_db
+    def remove_category(self, category_id):
+        statement = f"DELETE FROM {CATEGORY} WHERE id = {category_id}"
+        self.try_to_execute_statement(statement)
+        statement = f"DELETE FROM {PRODUCT} WHERE category = {category_id}"
+        self.try_to_execute_statement(statement)
+
+    @check_connection_to_db
+    def fetch_all_categories_with_products(self):
+        all_category = self._fetch_all_records_from_table(CATEGORY)
+        columns_from_products = 'id, amount, expiry_date, note, name'
+        for category in all_category:
+            statement = f"SELECT {columns_from_products} FROM {PRODUCT} WHERE category = {category['id']}"
+            self.try_to_execute_statement(statement)
             rows = []
             for row in self.cursor.fetchall():
                 rows.append(row)
-            product_type.update({'products': rows})
+            category.update({'products': rows})
 
             expiry_date = ''
             rows_with_expiry_date_not_empty = [x for x in rows if not '' and x['expiry_date'] != '']
             if rows_with_expiry_date_not_empty:
-                a = min([datetime.strptime(product['expiry_date'], '%d.%m.%Y') for product in rows_with_expiry_date_not_empty])
+                a = min([datetime.strptime(product['expiry_date'], '%d.%m.%Y') for product in
+                         rows_with_expiry_date_not_empty])
                 expiry_date = a.strftime("%d.%m.%Y")
-            product_type.update({'expiry_date': expiry_date})
+            category.update({'expiry_date': expiry_date})
 
             amount = sum([int(x['amount']) for x in rows])
-            product_type.update({'amount': amount})
+            category.update({'amount': amount})
 
-        return product_types
+        logging.debug(f"Return to GUI: {pprint.pformat(all_category)}")
+        return all_category
 
-
-
-
-
-
-
-    # def _split_input_record(self, input_dict):
-    #     table1 = {'name': input_dict['name'], 'type': input_dict['type'], 'measure': input_dict['measure']}
-    #     table2 = {'amount': input_dict['amount'], 'expiry_date': input_dict['expiry_date'], 'notes': input_dict['notes']}
-    #     return [table1, table2]
-
-
-    def fetch_all_records_from_table(self, table):
+    def _fetch_all_records_from_table(self, table):
         rows = []
         statement = f"SELECT * FROM {table}"
-        self.cursor.execute(statement)
+        self.try_to_execute_statement(statement)
 
-        for row in self.cursor.fetchall():
-            rows.append(row)
-        return rows;
-
-    def fetch_all_records(self):
-        rows = []
-        # statement = f"SELECT * FROM {PRODUCTS_ITEMS} JOIN {PRODUCTS} ON {PRODUCTS_ITEMS}.name = {PRODUCTS}.name ORDER BY {PRODUCTS_ITEMS}.name"
-        statement = f"SELECT * FROM {PRODUCTS} pi LEFT JOIN {PRODUCT_TYPES} p using(name) ORDER BY pi.name"
-        self.cursor.execute(statement)
         for row in self.cursor.fetchall():
             rows.append(row)
         return rows
 
-    def count_number_of_product_entry(self, name):
-        statement = f"SELECT COUNT(*) FROM {PRODUCTS} WHERE name = '{name}'"
-        return self.cursor.execute(statement)
-
-    def add_new_record(self, input):
-        [input_stocks, input_stock_items] = self._split_input_record(input)
-        self.add_new_record_to_table(PRODUCT_TYPES, input_stocks)
-
-        if input['measure'] == 'szt':
-            for _ in range(input['amount']):
-                self.add_new_record_to_table(PRODUCTS, input_stock_items)
-        else:
-            self.add_new_record_to_table(PRODUCTS, input_stock_items)
+    # def count_number_of_product_entry(self, name):
+    #     statement = f"SELECT COUNT(*) FROM {PRODUCTS} WHERE name = '{name}'"
+    #     return self.cursor.execute(statement)
 
 
-
-    # def remove_record(self, name):
-    #     self.remove_record_from_table(STOCKS, name)
-    #     self.remove_record_from_table(STOCK_ITEMS, name)
-    #
-    # def remove_record_from_table(self, table, name):
-    #     self.cursor.execute(f"DELETE FROM {table} WHERE name = {name}")
-    #     self.db_interface.commit()
+# if __name__ == "__main__":
+#     db = DataBaseInterface()
+#     print(pprint.pformat(db.fetch_all_categories_with_products()))
+#     db.add_category({'name': 'Kukurydza', 'category': 'Jedzenie', 'measure': 'szt'})
+#     print(pprint.pformat(db.fetch_all_categories_with_products()))
+#     db.add_product({'category': '1', 'amount': '1', 'note': '340g', 'name': '', 'expiry_date': '01.01.2022'})
+#     db.remove_category('14')
+#     db.remove_product('14')
