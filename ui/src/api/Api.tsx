@@ -45,17 +45,14 @@ export const deleteCategory = (id: number) => {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({id: {id}})
+        body: JSON.stringify(id)
     })
 }
 
 export const deleteProduct = (id: number) => {
-    fetch('http://localhost:8000/removeProduct', {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({id: {id}})
+    fetch('http://localhost:8000/removeProduct?' + new URLSearchParams({
+        'id': id.toString()
+    }), {
+        method: 'DELETE',
     })
 }

@@ -39,6 +39,23 @@ export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => 
         <TableCell>{value}</TableCell>
 }
 
+export const EditableNumberCell = (props: React.PropsWithChildren<CellProps>) => {
+    const [value, setValue] = useState(props.children)
+
+    return props.isEdited ?
+        <TableCell><TextField
+        type="number"
+        value={value} 
+        variant="standard" 
+        onChange={e => {
+            setValue(e.target.value)
+            props.onChange((prevChange) => {
+                return { ...prevChange, [props.property]: e.target.value }
+            })
+        }}/></TableCell> :
+        <TableCell>{value}</TableCell>
+}
+
 export const CategoryRow = (props: { row: Category }) => {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
@@ -83,6 +100,7 @@ export const CategoryRow = (props: { row: Category }) => {
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.amount} {row.measure}</TableCell>
                 <TableCell>{row.expiry_date}</TableCell>
+                <TableCell />
                 <TableCell><IconButton aria-label="confirm" onClick={openOptionDialog}>
                     <MoreVertIcon />
                     <OptionPopper
@@ -95,22 +113,24 @@ export const CategoryRow = (props: { row: Category }) => {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                <TableCell style={{ padding: 0}} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1 }}>
-                            <Typography variant="h6" gutterBottom component="div">
+                            <Typography variant="h4" gutterBottom component="div" style={{paddingLeft: '15%'}}>
                                 {row.name}
                             </Typography>
                             <Table>
                                 <colgroup>
-                                    <col width="20%" />
-                                    <col width="20%" />
-                                    <col width="20%" />
-                                    <col width="30%" />
-                                    <col width="30%" />
+                                    <col width="10%" />
+                                    <col width="15%" />
+                                    <col width="15%" />
+                                    <col width="15%" />
+                                    <col width="35%" />
+                                    <col width="10%" />
                                 </colgroup>
                                 <TableHead>
                                     <TableRow>
+                                        <TableCell />
                                         <TableCell>Name</TableCell>
                                         <TableCell>Amount</TableCell>
                                         <TableCell>Expiry Date</TableCell>
@@ -150,9 +170,10 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
     }, [row])
 
     return <TableRow key={row.id}>
+        <TableCell/>
         <EditableTableCell property={"name"} onChange={setNewProduct} isEdited={edit}>{row.name}</EditableTableCell>
         <TableCell>
-            <EditableTableCell property={"amount"} onChange={setNewProduct} isEdited={edit}>{row.amount}</EditableTableCell>
+            <EditableNumberCell property={"amount"} onChange={setNewProduct} isEdited={edit}>{row.amount}</EditableNumberCell>
             <TableCell sx={{border: 'none'}}>{props.category.measure}</TableCell>
         </TableCell>
         <EditableTableCell property={"expiry_date"} onChange={setNewProduct} isEdited={edit}>{row.expiry_date}</EditableTableCell>
@@ -212,13 +233,22 @@ export const StockTable = (props: { rows: Category[] }) => {
 
     return <TableContainer component={Paper}>
         <Table>
+            <colgroup>
+                <col width="10%" />
+                <col width="15%" />
+                <col width="15%" />
+                <col width="15%" />
+                <col width="35%" />
+                <col width="10%" />
+            </colgroup>
             <TableHead>
                 <TableRow>
                     <TableCell />
                     <TableCell>Name</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Expiry Date</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell />
+                    <TableCell>Action</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>

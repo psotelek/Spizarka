@@ -1,7 +1,7 @@
 import sqlite3 as sl
-# import pymysql as MySQLdb
+import pymysql as MySQLdb
 import logging
-import MySQLdb
+#import MySQLdb
 from datetime import datetime
 import logging
 import pprint

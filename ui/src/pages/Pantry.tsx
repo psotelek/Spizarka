@@ -1,6 +1,6 @@
 import { Button, TextField, Select, MenuItem, Grid } from "@mui/material"
 import React, { useEffect, useState } from "react"
-import { createProductType, createProduct, deleteCategory, deleteProduct, editCategory, editProduct, getPantry } from "../api/Api"
+import { createProductType, createProduct, editCategory, editProduct, getPantry } from "../api/Api"
 import { CategoryDialog } from "../component/CategoryDialog"
 import { StockTable } from "../component/StockTable"
 import { ProductType, ProductInfo } from "domain/Product"
