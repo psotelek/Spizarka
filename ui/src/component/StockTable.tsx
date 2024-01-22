@@ -9,15 +9,16 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { PantryContext } from 'pages/Pantry';
 import { Category, Product } from 'domain/ProductView'
-import { deleteCategory, deleteProduct } from '../api/Api';
+import { deleteCategory, deleteProduct, editCategory, editProduct } from '../api/Api';
 import { OptionPopper } from './CategoryOptionsDialog';
+import { ProductInfo, ProductType } from 'domain/Product';
 
 
 interface CellProps {
     property: string,
     isEdited?: boolean,
     props?: TableCellProps,
-    onChange: Dispatch<SetStateAction<{ category: number; amount: number; note: string; name: string; expiry_date: string; }>>
+    onChange: Dispatch<SetStateAction<any>>
 }
 
 export interface CategoryActions {
@@ -32,7 +33,7 @@ export const EditableTableCell = (props: React.PropsWithChildren<CellProps>) => 
     return props.isEdited ?
         <TableCell><TextField value={value} variant="standard" onChange={e => {
             setValue(e.target.value)
-            props.onChange((prevChange) => {
+            props.onChange((prevChange: ProductInfo | ProductType): ProductInfo | ProductType => {
                 return { ...prevChange, [props.property]: e.target.value }
             })
         }}/></TableCell> :
@@ -49,7 +50,7 @@ export const EditableNumberCell = (props: React.PropsWithChildren<CellProps>) =>
         variant="standard" 
         onChange={e => {
             setValue(e.target.value)
-            props.onChange((prevChange) => {
+            props.onChange((prevChange: ProductInfo | ProductType): ProductInfo | ProductType => {
                 return { ...prevChange, [props.property]: e.target.value }
             })
         }}/></TableCell> :
@@ -61,6 +62,12 @@ export const CategoryRow = (props: { row: Category }) => {
     const [open, setOpen] = React.useState(false);
     const [categoryOptionDialog, setCategoryOptionDialog] = React.useState(false);
     const [popperAnchor, setPopperAnchor] = React.useState<null | HTMLElement>(null);
+    const [edit, setEdit] = useState(false);
+    const [newType, setNewType] = useState({
+        category: row.category,
+        name: row.name,
+        measure: row.measure
+    })
     const actions = React.useContext(PantryContext);
     const actionMenu = { addProduct: "Dodaj produkt", editCategory: "Edytuj kategorię", removeCategory: "Usuń kategorię" }
 
@@ -75,7 +82,7 @@ export const CategoryRow = (props: { row: Category }) => {
                 actions?.clientAdd({ id: -1, name: "", amount: 0, expiry_date: "", note: "" }, row);
                 break;
             case "editCategory":
-                actions?.edit(row);
+                setEdit(true)
                 break;
             case "removeCategory":
                 deleteCategory(row.id)
@@ -97,26 +104,53 @@ export const CategoryRow = (props: { row: Category }) => {
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.amount} {row.measure}</TableCell>
+                <EditableTableCell property='name' onChange={setNewType} isEdited={edit}>{row.name}</EditableTableCell>
+                <TableCell>
+                    <TableCell>{row.amount}</TableCell> 
+                    <EditableTableCell property='measure' onChange={setNewType} isEdited={edit}>{row.measure}</EditableTableCell>
+                    </TableCell>
                 <TableCell>{row.expiry_date}</TableCell>
-                <TableCell />
-                <TableCell><IconButton aria-label="confirm" onClick={openOptionDialog}>
-                    <MoreVertIcon />
-                    <OptionPopper
-                        actionList={actionMenu}
-                        handleOptionClick={handleOptionClick}
-                        popperAnchor={popperAnchor}
-                        open={categoryOptionDialog}
-                    />
-                </IconButton>
+                <EditableTableCell property='category' onChange={setNewType} isEdited={edit}>{row.category}</EditableTableCell>
+                <TableCell>
+                    {edit ?
+                    <Grid container>
+                        <Grid item xs={6}>
+                            <IconButton aria-label="confirm" onClick={() => {
+                                editCategory({
+                                    category: newType.category,
+                                    measure: newType.measure,
+                                    name: newType.name,
+                                }, row.id);
+                                setEdit(false);
+                            }}>
+                                <CheckIcon />
+                            </IconButton>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <IconButton aria-label="cancel" onClick={e => {
+                                setEdit(false);
+                            }}>
+                                <HighlightOffIcon />
+                            </IconButton>
+                        </Grid>
+                    </Grid> :
+                        <IconButton aria-label="confirm" onClick={openOptionDialog}>
+                        <MoreVertIcon />
+                        <OptionPopper
+                            actionList={actionMenu}
+                            handleOptionClick={handleOptionClick}
+                            popperAnchor={popperAnchor}
+                            open={categoryOptionDialog}
+                        />
+                    </IconButton>
+                    }
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ padding: 0}} colSpan={6}>
+                <TableCell style={{ padding: 0 }} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1 }}>
-                            <Typography variant="h4" gutterBottom component="div" style={{paddingLeft: '15%'}}>
+                            <Typography variant="h6" gutterBottom component="div" style={{paddingLeft: '15%', background: 'lightgray'}}>
                                 {row.name}
                             </Typography>
                             <Table>
@@ -184,7 +218,13 @@ export const ProductRow = (props: { row: Product; category: Category }) => {
                     <Grid item xs={6}>
                         <IconButton aria-label="confirm" onClick={() => {
                             if (row.id !== -1) {
-                                actions?.edit(row);
+                                editProduct({
+                                    category: newProduct.category,
+                                    amount: newProduct.amount,
+                                    note: newProduct.note,
+                                    name: newProduct.name,
+                                    expiry_date: newProduct.expiry_date
+                                }, row.id);
                             } else {
                                 actions?.productCreate({
                                     category: newProduct.category,
@@ -247,7 +287,7 @@ export const StockTable = (props: { rows: Category[] }) => {
                     <TableCell>Name</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Expiry Date</TableCell>
-                    <TableCell />
+                    <TableCell>Category</TableCell>
                     <TableCell>Action</TableCell>
                 </TableRow>
             </TableHead>

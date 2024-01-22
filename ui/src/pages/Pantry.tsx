@@ -11,13 +11,8 @@ export const PantryContext = React.createContext<Actions | undefined>(undefined)
 export interface Actions {
   productCreate: (arg0: ProductInfo) => void,
   typeCreate: (arg0: ProductType) => void,
-  edit: (arg0: Product | Category) => void,
   clientAdd: (arg0: Product, arg1: Category) => void,
   clientRemove: (arg0: Product, arg1: Category) => void
-}
-
-const isCategory = (item: Category | Product): item is Category => {
-  return (item as Category).measure !== undefined;
 }
 
 export const Pantry = () => {
@@ -35,14 +30,6 @@ export const Pantry = () => {
 
   const handleTypeCreate = (productType: ProductType) => {
     createProductType(productType)
-  }
-
-  const handleEdit = (edited: Category | Product) => {
-    if (isCategory(edited)) {
-      editCategory();
-    } else {
-      editProduct();
-    }
   }
 
   const handleLocalCreate = (created: Product, category: Category) => {
@@ -70,7 +57,6 @@ export const Pantry = () => {
   const actions = { 
     productCreate: handleProductCreate, 
     typeCreate: handleTypeCreate,
-    edit: handleEdit,
     clientAdd: handleLocalCreate, 
     clientRemove: handleLocalDelete } as Actions;
 

@@ -30,12 +30,30 @@ export const createProduct = (product: ProductInfo) => {
     })
 }
 
-export const editCategory = () => {
-    alert("Edited Category")
+export const editCategory = (category: ProductType, id: number) => {
+    fetch('http://localhost:8000/editCategory?' + new URLSearchParams({
+        'category_id':id.toString()
+    }), {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(category)
+    })
 }
 
-export const editProduct = () => {
-    alert("Edited Product")
+export const editProduct = (product: ProductInfo, id: number) => {
+    fetch('http://localhost:8000/editProduct?' + new URLSearchParams({
+        'product_id':id.toString()
+    }), {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product)
+    })
 }
 
 export const deleteCategory = (id: number) => {
