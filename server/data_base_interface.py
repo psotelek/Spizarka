@@ -126,22 +126,20 @@ class DataBaseInterface:
 
     @log_request
     @check_connection_to_db
-    def edit_product(self, product):
-        self.edit_record(PRODUCT, product)
+    def edit_product(self, product_id, product):
+        self.edit_record(PRODUCT, product_id, product)
 
     @check_connection_to_db
-    def edit_category(self, category):
-        self.edit_record(CATEGORY, category)
+    def edit_category(self, category_id, category):
+        self.edit_record(CATEGORY, category_id, category)
 
     @check_connection_to_db
-    def edit_record(self, table, record):
+    def edit_record(self, table, record_id, record):
         # attributes = ','.join([f"{k}" for k in record.keys()])
         # values = ','.join([f"'{v}'" for v in record.values()])
-        record_id = record.pop("id")
         k_v = ', '.join([f"{k}='{v}'" for k, v in record.items()])
         statement = f"UPDATE {table} SET {k_v} WHERE id = {record_id}"
         self.try_to_execute_statement(statement)
-
 
 
     @check_connection_to_db
@@ -191,6 +189,6 @@ class DataBaseInterface:
     # db.add_category({'name': 'Kukurydza', 'category': 'Jedzenie', 'measure': 'szt'})
     # print(pprint.pformat(db.fetch_all_categories_with_products()))
     # db.add_product({'category': '1', 'amount': '1', 'note': '340g', 'name': '', 'expiry_date': '01.01.2022'})
-    # db.edit_product({'id': '7', 'category': '1', 'amount': '1', 'note': '350g', 'name': '', 'expiry_date': '01.01.2022'})
+    # db.edit_product(7, {'category': '1', 'amount': '1', 'note': '350g', 'name': '', 'expiry_date': '01.01.2022'})
     # db.remove_category('14')
     # db.remove_product('29')
